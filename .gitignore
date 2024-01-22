@@ -25,3 +25,6 @@ dist-ssr
 
 # Bun
 *.lockb
+
+# Project stuff
+examples/
