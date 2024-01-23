@@ -1,8 +1,13 @@
 export function toShortIsoDate(d: Date): string {
-  return `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, "0")}-${d
-    .getDate()
+  return `${d.getFullYear()}-${(d.getMonth() + 1)
     .toString()
-    .padStart(2, "0")}`;
+    .padStart(2, "0")}-${d.getDate().toString().padStart(2, "0")}`;
+}
+
+export function toShortDutchDate(d: Date): string {
+  return `${d.getDate().toString().padStart(2, "0")}-${(d.getMonth() + 1)
+    .toString()
+    .padStart(2, "0")}-${d.getFullYear()}`;
 }
 
 export function toHoursMinutesNotation(minutes: number): string {
@@ -25,7 +30,10 @@ export function toHoursMinutesNotation(minutes: number): string {
 export function toColonSeparatedTime(minutes: number): string {
   const hours = Math.floor(minutes / 60);
   const minutesRemainder = minutes - hours * 60;
-  return `${String(hours).padStart(2, "0")}:${String(minutesRemainder).padStart(2, "0")}`;
+  return `${String(hours).padStart(2, "0")}:${String(minutesRemainder).padStart(
+    2,
+    "0"
+  )}`;
 }
 
 export function tryParseColonSeparatedTime(userValue: string): number | null {
@@ -56,7 +64,9 @@ export function tryParseHoursMinutesNotation(userValue: string): number | null {
     return hours * 60;
   } else if (/^[0-9]+m$/.test(trimmedValue)) {
     // example: 30m
-    const minutes = parseInt(trimmedValue.substring(0, trimmedValue.length - 1));
+    const minutes = parseInt(
+      trimmedValue.substring(0, trimmedValue.length - 1)
+    );
     return minutes;
   } else if (/^[0-9]+$/.test(trimmedValue)) {
     // example: 1

@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { toHoursMinutesNotation, tryParseHoursMinutesNotation } from "@/format";
-import { Day, days } from "@/types";
+import { LoggableDay, loggableDays } from "@/types";
 import { reactive } from "vue";
 
-export type saveEntry = { category: string; day: Day; minutes: number };
+export type saveEntry = { category: string; day: LoggableDay; minutes: number };
 
 const props = defineProps<{
   inputCategories: string[];
@@ -18,7 +18,7 @@ const createKey = (category: string, day: string) => `${category}${day}`;
 const generateValues = (): Record<string, string> => {
   const result: saveEntry[] = [];
   props.inputCategories.forEach((category) => {
-    days.forEach((day) => {
+    loggableDays.forEach((day) => {
       result.push({
         category,
         day,
@@ -43,14 +43,14 @@ const generateValues = (): Record<string, string> => {
 
 const values: Record<string, string> = reactive(generateValues());
 
-const splitKey = (key: string): [string, Day] => {
+const splitKey = (key: string): [string, LoggableDay] => {
   const categoryPart = props.inputCategories.find((c) => key.startsWith(c));
   if (categoryPart == null) {
     throw new Error(`Invalid key ${key}: unknown category`);
   }
 
   const dayPart = key.substring(categoryPart.length);
-  if (!days.includes(dayPart)) {
+  if (!loggableDays.includes(dayPart)) {
     throw new Error(`Invalid key ${key}: unknown day ${dayPart}`);
   }
 
@@ -84,15 +84,19 @@ const onSubmit = () => {
     <table>
       <tr>
         <th></th>
-        <th v-for="day in days" :key="day">
+        <th v-for="day in loggableDays" :key="day">
           {{ day }}
         </th>
       </tr>
 
       <tr v-for="category in inputCategories" :key="category">
         <td>{{ category }}</td>
-        <td v-for="day in days" :key="createKey(category, day)">
-          <input type="text" v-model="values[createKey(category, day)]" />
+        <td v-for="day in loggableDays" :key="createKey(category, day)">
+          <input
+            :name="createKey(category, day)"
+            type="text"
+            v-model="values[createKey(category, day)]"
+          />
         </td>
       </tr>
     </table>

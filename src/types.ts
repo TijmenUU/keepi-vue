@@ -1,8 +1,8 @@
-export const days: string[] = [
+export const loggableDays: string[] = [
   "maandag",
   "dinsdag",
   "woensdag",
   "donderdag",
   "vrijdag",
 ] as const;
-export type Day = (typeof days)[number];
+export type LoggableDay = (typeof loggableDays)[number];
