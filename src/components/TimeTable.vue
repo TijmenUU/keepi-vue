@@ -3,20 +3,24 @@ import { toHoursMinutesNotation, tryParseHoursMinutesNotation } from "@/format";
 import { LoggableDay, loggableDays } from "@/types";
 import { reactive } from "vue";
 
-export type saveEntry = { category: string; day: LoggableDay; minutes: number };
+export type TimeTableEntry = {
+  category: string;
+  day: LoggableDay;
+  minutes: number;
+};
 
 const props = defineProps<{
   inputCategories: string[];
-  initialValues: saveEntry[];
+  initialValues: TimeTableEntry[];
 }>();
 const emits = defineEmits<{
-  (e: "save", values: saveEntry[]): void;
+  (e: "save", values: TimeTableEntry[]): void;
 }>();
 
 const createKey = (category: string, day: string) => `${category}${day}`;
 
 const generateValues = (): Record<string, string> => {
-  const result: saveEntry[] = [];
+  const result: TimeTableEntry[] = [];
   props.inputCategories.forEach((category) => {
     loggableDays.forEach((day) => {
       result.push({
@@ -60,7 +64,7 @@ const splitKey = (key: string): [string, LoggableDay] => {
 const onSubmit = () => {
   const entries = Object.entries(values);
 
-  const results: saveEntry[] = [];
+  const results: TimeTableEntry[] = [];
   for (const [key, value] of entries) {
     const [category, day] = splitKey(key);
     const minutes = !!value ? tryParseHoursMinutesNotation(value) : 0;

@@ -1,6 +1,6 @@
 import { toShortIsoDate } from "@/format";
 import { INokoPostEntryRequest, INokoPutEntryRequest } from "@/requests";
-import { INokoGetEntriesResponse, INokoPostEntryResponse } from "@/responses";
+import { INokoGetEntryResponse, INokoPostEntryResponse } from "@/responses";
 
 export default class NokoClient {
   private baseUrl: string;
@@ -19,7 +19,7 @@ export default class NokoClient {
     from: Date,
     // Inclusive
     to: Date
-  ): Promise<INokoGetEntriesResponse> {
+  ): Promise<INokoGetEntryResponse[]> {
     const options = this.getBaseRequestOptions();
     options.method = "GET";
 

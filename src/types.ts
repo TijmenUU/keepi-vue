@@ -6,3 +6,5 @@ export const loggableDays: string[] = [
   "vrijdag",
 ] as const;
 export type LoggableDay = (typeof loggableDays)[number];
+
+export type TagToCategoryMapping = { nokoTags: string[]; name: string };

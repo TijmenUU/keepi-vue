@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import TimeTable, { saveEntry } from "@/components/TimeTable.vue";
+import TimeTable, { TimeTableEntry } from "@/components/TimeTable.vue";
 import { getWeekDaysFor } from "@/date";
 import { toShortDutchDate } from "@/format";
 import { loggableDays } from "@/types";
@@ -9,7 +9,7 @@ const categories = ["ROB-Net", "Borrel", "Vakantie", "Feestdag"];
 
 const dateRange = getWeekDaysFor(new Date());
 
-const initialValues: saveEntry[] = [
+const initialValues: TimeTableEntry[] = [
   {
     category: "ROB-Net",
     day: "maandag",
@@ -24,7 +24,7 @@ const dateRangeDescription = computed<string>(
     )}`
 );
 
-const onSave = (entries: saveEntry[]) => {
+const onSave = (entries: TimeTableEntry[]) => {
   console.log(entries);
 };
 </script>

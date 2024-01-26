@@ -64,7 +64,7 @@
 //     "updated_at": "2012-01-09T08:33:29Z"
 //   }
 // ]
-export interface INokoGetEntriesResponse {
+export interface INokoGetEntryResponse {
   id: number;
   date: string;
   user: {
@@ -77,7 +77,7 @@ export interface INokoGetEntriesResponse {
   };
   tags: {
     id: number;
-    name: string;
+    formatted_name: string;
   }[];
 }
 
