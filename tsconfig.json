@@ -24,13 +24,17 @@
     "paths": {
       "@/*": [
         "./src/*"
+      ],
+      "@test/*": [
+        "./test/*"
       ]
     }
   },
   "include": [
     "src/**/*.ts",
     "src/**/*.tsx",
-    "src/**/*.vue"
+    "src/**/*.vue",
+    "test/**/*.ts"
   ],
   "references": [
     {
