@@ -1,20 +1,46 @@
+import { getDifferenceInSeconds } from "@/date";
 import { toShortIsoDate } from "@/format";
-import { INokoPostEntryRequest, INokoPutEntryRequest } from "@/requests";
+import {
+  INokoGetCurrentUserResponse,
+  INokoPostEntryRequest,
+  INokoPutEntryRequest,
+} from "@/requests";
 import { INokoGetEntryResponse, INokoPostEntryResponse } from "@/responses";
 
 export default class NokoClient {
   private baseUrl: string;
   private userAgent: string;
+
   private token: string;
 
+  private minimumIntervalBetweenRequestsInSeconds = 0.5;
+  private lastRequestDateTime: Date;
+
+  // Prefer to use the cached client from the ApplicationStore instead
+  // of constructing a new instance. The rate limiting will not function
+  // if multiple instances are used.
   constructor(token: string) {
     this.baseUrl = "https://api.nokotime.com/v2";
     this.userAgent = "keepi-vue/1.0";
     this.token = token;
+
+    this.lastRequestDateTime = new Date();
+    this.lastRequestDateTime.setDate(new Date().getDate() - 1);
+  }
+
+  public getToken(): string {
+    return this.token;
+  }
+
+  public async getCurrentUser(): Promise<INokoGetCurrentUserResponse> {
+    const options = this.getBaseRequestOptions();
+    options.method = "GET";
+
+    const response = await this.makeRequest("/current_user/", options);
+    return await response.json();
   }
 
   public async getEntries(
-    userId: number,
     // Inclusive
     from: Date,
     // Inclusive
@@ -24,9 +50,9 @@ export default class NokoClient {
     options.method = "GET";
 
     const response = await this.makeRequest(
-      `/entries?user_ids=${userId}&from=${toShortIsoDate(
-        from
-      )}&to=${toShortIsoDate(to)}`,
+      `/current_user/entries?from=${toShortIsoDate(from)}&to=${toShortIsoDate(
+        to
+      )}`,
       options
     );
     return await response.json();
@@ -64,8 +90,8 @@ export default class NokoClient {
     subpath: string,
     options?: RequestInit
   ): Promise<Response> {
-    // TODO debounce this to 1 request per 500ms
-    // See https://developer.nokotime.com/v2/#rate-limiting
+    await this.RateLimitSelf();
+
     const response = await fetch(`${this.baseUrl}/${subpath}`, options);
     if (!response.ok) {
       console.error(response.status, await response.text());
@@ -73,6 +99,27 @@ export default class NokoClient {
     }
 
     return response;
+  }
+
+  // See https://developer.nokotime.com/v2/#rate-limiting
+  private async RateLimitSelf(): Promise<void> {
+    const now = new Date();
+    const secondsSinceLastRequest = getDifferenceInSeconds(
+      now,
+      this.lastRequestDateTime
+    );
+    if (secondsSinceLastRequest < 0.5) {
+      await new Promise((resolve) =>
+        setTimeout(
+          resolve,
+          (this.minimumIntervalBetweenRequestsInSeconds -
+            secondsSinceLastRequest) *
+            1000
+        )
+      );
+    }
+
+    this.lastRequestDateTime = new Date();
   }
 
   private getBaseRequestOptions(contentType?: string): RequestInit {
@@ -87,6 +134,7 @@ export default class NokoClient {
 
     return {
       headers: headers,
+      redirect: "follow", // Noko really likes to redirect
     };
   }
 }
