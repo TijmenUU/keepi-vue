@@ -1,4 +1,4 @@
-import { getWeekDaysFor, getWeekNumber } from "@/date";
+import { getDifferenceInSeconds, getWeekDaysFor, getWeekNumber } from "@/date";
 import { describe, expect, test } from "vitest";
 
 describe("format", () => {
@@ -71,5 +71,24 @@ describe("format", () => {
     expect(getWeekNumber(new Date(2024, 0, 14))).toBe(2);
     expect(getWeekNumber(new Date(2024, 0, 21))).toBe(3);
     expect(getWeekNumber(new Date(2024, 0, 28))).toBe(4);
+  });
+
+  test("getDifferenceInSeconds", () => {
+    const now = new Date(2024, 0, 1, 0, 0, 0, 0);
+    expect(getDifferenceInSeconds(now, now)).toBe(0);
+
+    const fiveSecondsLater = new Date(now);
+    fiveSecondsLater.setSeconds(5);
+    expect(getDifferenceInSeconds(now, fiveSecondsLater)).toBeCloseTo(5, 1);
+    expect(getDifferenceInSeconds(fiveSecondsLater, now)).toBeCloseTo(5, 1);
+
+    const twoHundredMillisecondsLater = new Date(now);
+    twoHundredMillisecondsLater.setMilliseconds(200);
+    expect(
+      getDifferenceInSeconds(now, twoHundredMillisecondsLater)
+    ).toBeCloseTo(0.2, 1);
+    expect(
+      getDifferenceInSeconds(twoHundredMillisecondsLater, now)
+    ).toBeCloseTo(0.2, 1);
   });
 });

@@ -47,3 +47,7 @@ export function getWeekNumber(d: Date): number {
   // Calculate full weeks to nearest Thursday
   return Math.ceil(((d.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
 }
+
+export function getDifferenceInSeconds(a: Date, b: Date): number {
+  return Math.abs((a.getTime() - b.getTime()) / 1000);
+}
