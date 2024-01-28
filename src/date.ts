@@ -31,7 +31,7 @@ export function getWeekDaysFor(d: Date): DateRange {
   return {
     dates: dates,
     weekNumber: weekNumber,
-    year: d.getFullYear(),
+    year: dates.map((d) => d.getFullYear()).sort()[0],
   };
 }
 
