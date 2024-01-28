@@ -11,6 +11,10 @@ export function toShortDutchDate(d: Date): string {
 }
 
 export function toHoursMinutesNotation(minutes: number): string {
+  if (minutes < 0) {
+    throw new Error("Negative values are not supported");
+  }
+
   const minutesUnit = "m";
   const hoursUnit = "u";
 
@@ -28,6 +32,10 @@ export function toHoursMinutesNotation(minutes: number): string {
 }
 
 export function toColonSeparatedTime(minutes: number): string {
+  if (minutes < 0) {
+    throw new Error("Negative values are not supported");
+  }
+
   const hours = Math.floor(minutes / 60);
   const minutesRemainder = minutes - hours * 60;
   return `${String(hours).padStart(2, "0")}:${String(minutesRemainder).padStart(
@@ -50,7 +58,7 @@ export function tryParseColonSeparatedTime(userValue: string): number | null {
 
 export function tryParseHoursMinutesNotation(userValue: string): number | null {
   const trimmedValue = userValue.trim();
-  if (/^[0-9]+(h|u)\s*[0-9]+m$/.test(trimmedValue)) {
+  if (/^[0-9]+(h|u)(\s)*[0-9]+m$/.test(trimmedValue)) {
     // example: 1h30m
     const splitByhours = trimmedValue.split(/h|u/);
     const hours = parseInt(splitByhours[0]);
@@ -68,10 +76,6 @@ export function tryParseHoursMinutesNotation(userValue: string): number | null {
       trimmedValue.substring(0, trimmedValue.length - 1)
     );
     return minutes;
-  } else if (/^[0-9]+$/.test(trimmedValue)) {
-    // example: 1
-    const hours = parseInt(trimmedValue);
-    return hours * 60;
   }
   return null;
 }
