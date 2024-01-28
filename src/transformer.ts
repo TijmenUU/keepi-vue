@@ -7,6 +7,7 @@ import { TagToCategoryMapping, loggableDays } from "@/types";
 type DayAndTagMapping = {
   date: string;
   day: string;
+  projectId: number;
   nokoTags: string[];
   category: string;
 };
@@ -14,6 +15,7 @@ type DayAndTagMapping = {
 type NokoTimeTableMapping = {
   date: string;
   day: string;
+  projectId: number;
   nokoTags: string[];
   category: string;
   entries: INokoGetEntryResponse[];
@@ -45,8 +47,7 @@ export function getNokoCallsForDelta(
   weekDays: Date[],
   categoryMapping: TagToCategoryMapping[],
   nokoEntries: INokoGetEntryResponse[],
-  timeTableEntries: TimeTableEntry[],
-  projectId: number
+  timeTableEntries: TimeTableEntry[]
 ): TimeTableDelta {
   const preUserInputMapping = getNokoToTimeTableMapping(
     weekDays,
@@ -61,7 +62,7 @@ export function getNokoCallsForDelta(
       (t) => t.category === original.category && t.day === original.day
     );
     if (userInput) {
-      dayCategoryResults.push(getDayDelta(original, userInput, projectId));
+      dayCategoryResults.push(getDayDelta(original, userInput));
     } else {
       console.debug(
         `Time table entry for project ${original.category} on ${original.day} seems to be missing?`
@@ -90,8 +91,7 @@ export function getNokoCallsForDelta(
 
 function getDayDelta(
   original: NokoTimeTableMapping,
-  userInput: TimeTableEntry,
-  projectId: number
+  userInput: TimeTableEntry
 ): DayCategoryDelta {
   // No changes
   if (original.minutes === userInput.minutes) {
@@ -114,7 +114,7 @@ function getDayDelta(
       create: {
         date: original.date,
         minutes: userInput.minutes,
-        project_id: projectId,
+        project_id: original.projectId,
         description,
       },
       update: null,
@@ -130,7 +130,7 @@ function getDayDelta(
       body: {
         date: original.date,
         minutes: userInput.minutes,
-        project_id: projectId,
+        project_id: original.projectId,
         description,
       },
     },
@@ -148,7 +148,8 @@ function getNokoToTimeTableMapping(
     const filteredEntries = entries.filter(
       (e) =>
         dtm.category &&
-        e.date == dtm.date &&
+        e.date === dtm.date &&
+        e.project.id === dtm.projectId &&
         dtm.nokoTags.length == e.tags.length &&
         dtm.nokoTags.every((mt) =>
           e.tags.some((et) => et.formatted_name === mt)
@@ -158,6 +159,7 @@ function getNokoToTimeTableMapping(
     return {
       date: dtm.date,
       day: dtm.day,
+      projectId: dtm.projectId,
       nokoTags: dtm.nokoTags,
       category: dtm.category,
       entries: filteredEntries,
@@ -190,6 +192,7 @@ function getDayAndTagMapping(
       results.push({
         day: dayToDateMapping[i].day,
         date: dayToDateMapping[i].date,
+        projectId: categoryMapping[j].projectId,
         nokoTags: categoryMapping[j].nokoTags,
         category: categoryMapping[j].name,
       });
