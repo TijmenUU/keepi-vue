@@ -85,25 +85,27 @@ const onSubmit = () => {
 
 <template>
   <div>
-    <table>
-      <tr>
-        <th></th>
-        <th v-for="day in loggableDays" :key="day">
-          {{ day }}
-        </th>
-      </tr>
+    <div style="max-width: 100vw; overflow-x: scroll">
+      <table>
+        <tr>
+          <th></th>
+          <th v-for="day in loggableDays" :key="day">
+            {{ day }}
+          </th>
+        </tr>
 
-      <tr v-for="category in inputCategories" :key="category">
-        <td>{{ category }}</td>
-        <td v-for="day in loggableDays" :key="createKey(category, day)">
-          <input
-            :name="createKey(category, day)"
-            type="text"
-            v-model="values[createKey(category, day)]"
-          />
-        </td>
-      </tr>
-    </table>
+        <tr v-for="category in inputCategories" :key="category">
+          <td>{{ category }}</td>
+          <td v-for="day in loggableDays" :key="createKey(category, day)">
+            <input
+              :name="createKey(category, day)"
+              type="text"
+              v-model="values[createKey(category, day)]"
+            />
+          </td>
+        </tr>
+      </table>
+    </div>
 
     <div
       style="
@@ -117,3 +119,14 @@ const onSubmit = () => {
     </div>
   </div>
 </template>
+
+<style>
+table {
+  word-break: keep-all;
+}
+
+input {
+  width: 80px;
+  text-align: center;
+}
+</style>
