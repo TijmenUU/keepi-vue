@@ -69,6 +69,7 @@ export const useApplicationStore = defineStore("application", {
         return false;
       }
 
+      localStorage.setItem(apiKeyLocalStorageKey, this.apiKey);
       return true;
     },
   },
