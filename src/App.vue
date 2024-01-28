@@ -1,42 +1,25 @@
-<script setup lang="ts">
-import TimeTable, { TimeTableEntry } from "@/components/TimeTable.vue";
-import { getWeekDaysFor } from "@/date";
-import { toShortDutchDate } from "@/format";
-import { loggableDays } from "@/types";
-import { computed } from "vue";
-
-const categories = ["ROB-Net", "Borrel", "Vakantie", "Feestdag"];
-
-const dateRange = getWeekDaysFor(new Date());
-
-const initialValues: TimeTableEntry[] = [
-  {
-    category: "ROB-Net",
-    day: "maandag",
-    minutes: 420,
-  },
-];
-
-const dateRangeDescription = computed<string>(
-  () =>
-    `${toShortDutchDate(dateRange.dates[0])} t/m ${toShortDutchDate(
-      dateRange.dates[loggableDays.length - 1]
-    )}`
-);
-
-const onSave = (entries: TimeTableEntry[]) => {
-  console.log(entries);
-};
-</script>
+<script setup lang="ts"></script>
 
 <template>
-  <h2>Week {{ dateRange.weekNumber }}</h2>
+  <RouterView v-slot="{ Component }">
+    <Transition name="fade" mode="out-in" appear>
+      <Suspense>
+        <component :is="Component"></component>
 
-  <p>{{ dateRangeDescription }}</p>
-
-  <TimeTable
-    :input-categories="categories"
-    :initial-values="initialValues"
-    @save="onSave"
-  />
+        <template #fallback> Loading ... </template>
+      </Suspense>
+    </Transition>
+  </RouterView>
 </template>
+
+<style>
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.5s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+</style>
