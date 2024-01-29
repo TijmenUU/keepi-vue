@@ -4,6 +4,8 @@ export const loggableDays: string[] = [
   "woensdag",
   "donderdag",
   "vrijdag",
+  "zaterdag",
+  "zondag",
 ] as const;
 export type LoggableDay = (typeof loggableDays)[number];
 
