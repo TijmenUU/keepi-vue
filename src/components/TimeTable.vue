@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { toHoursMinutesNotation, tryParseHoursMinutesNotation } from "@/format";
 import { LoggableDay, loggableDays } from "@/types";
-import { reactive } from "vue";
+import { computed, reactive } from "vue";
 
 export type TimeTableEntry = {
   category: string;
@@ -46,6 +46,58 @@ const generateValues = (): Record<string, string> => {
 };
 
 const values: Record<string, string> = reactive(generateValues());
+
+const summaries = computed<Record<string, string>>(() => {
+  const aggregates = props.inputCategories.reduce<Record<string, number>>(
+    (acc, entry) => ({
+      ...acc,
+      [entry]: 0,
+    }),
+    {}
+  );
+
+  Object.keys(values).forEach((key) => {
+    const value = tryParseHoursMinutesNotation(values[key]);
+    if (value != null) {
+      const parts = splitKey(key);
+      aggregates[parts[0]] += value;
+    }
+  });
+
+  return props.inputCategories.reduce<Record<string, string>>(
+    (acc, entry) => ({
+      ...acc,
+      [entry]: toHoursMinutesNotation(aggregates[entry]),
+    }),
+    {}
+  );
+});
+
+const total = computed<string>(() => {
+  const aggregates = props.inputCategories.reduce<Record<string, number>>(
+    (acc, entry) => ({
+      ...acc,
+      [entry]: 0,
+    }),
+    {}
+  );
+
+  Object.keys(values).forEach((key) => {
+    const value = tryParseHoursMinutesNotation(values[key]);
+    if (value != null) {
+      const parts = splitKey(key);
+      aggregates[parts[0]] += value;
+    }
+  });
+
+  return toHoursMinutesNotation(
+    props.inputCategories.reduce<number>(
+      (acc, entry) =>
+        acc + (tryParseHoursMinutesNotation(summaries.value[entry]) ?? 0),
+      0
+    )
+  );
+});
 
 const splitKey = (key: string): [string, LoggableDay] => {
   const categoryPart = props.inputCategories.find((c) => key.startsWith(c));
@@ -92,6 +144,7 @@ const onSubmit = () => {
           <th v-for="day in loggableDays" :key="day">
             {{ day }}
           </th>
+          <th></th>
         </tr>
 
         <tr v-for="category in inputCategories" :key="category">
@@ -102,6 +155,18 @@ const onSubmit = () => {
               type="text"
               v-model="values[createKey(category, day)]"
             />
+          </td>
+          <td>
+            {{ summaries[category] }}
+          </td>
+        </tr>
+
+        <tr>
+          <td></td>
+          <td :colspan="loggableDays.length - 1"></td>
+          <td>Totaal</td>
+          <td style="border-top: 1px white solid">
+            {{ total }}
           </td>
         </tr>
       </table>
