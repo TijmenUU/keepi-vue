@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import WeekEditor from "@/components/WeekEditor.vue";
-import { DateRange, getWeekDaysFor } from "@/date";
-import { toShortDutchDate, toShortIsoDate } from "@/format";
+import { DateRange, getWeekDaysFor, getWeekNumber } from "@/date";
+import { toShortDutchDate } from "@/format";
 import { INokoGetEntryResponse } from "@/responses";
 import { useApplicationStore } from "@/store/application-store";
 import { TagToCategoryMapping, loggableDays } from "@/types";
@@ -27,6 +27,7 @@ const applicationStore = useApplicationStore();
 const nokoClient = applicationStore.getNokoClient();
 
 const dateRange = computed<DateRange>(() => getWeekDaysFor(startDate.value));
+const currentWeek = getWeekNumber(new Date());
 
 const dateRangeDescription = computed<string>(
   () =>
@@ -85,7 +86,7 @@ const onNextWeek = async () => {
       <button @click="onPreviousWeek">Vorige</button>
       <button
         style="margin-left: 10px; margin-right: 10px"
-        :disabled="toShortIsoDate(startDate) === toShortIsoDate(new Date())"
+        :disabled="currentWeek === dateRange.weekNumber"
         @click="onToday"
       >
         Vandaag
