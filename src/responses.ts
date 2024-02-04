@@ -161,3 +161,93 @@ export interface INokoPostEntryResponse {
     name: string;
   }[];
 }
+
+// See https://developer.nokotime.com/v2/tags/
+// Example
+// [
+//   {
+//     "id": 249397,
+//     "name": "noko",
+//     "billable": true,
+//     "formatted_name": "#noko",
+//     "url": "https://api.nokotime.com/v2/tags/249397",
+//     "import": {
+//       "id": 8910,
+//       "url": "https://api.nokotime.com/v2/imports/8910"
+//     },
+//     "entries": 0,
+//     "entries_url": "https://api.nokotime.com/v2/tags/55629/entries",
+//     "merge_url": "https://api.nokotime.com/v2/tags/55629/merge",
+//     "created_at": "2010-06-09T20:44:57Z",
+//     "updated_at": "2010-06-09T20:44:57Z"
+//   }
+// ]
+export interface INokoGetTagResponse {
+  id: number;
+  name: string;
+  formatted_name: string;
+}
+
+// See https://developer.nokotime.com/v2/projects/
+// Example
+// [
+//   {
+//     "id": 37396,
+//     "name": "Gear GmbH",
+//     "billing_increment": 10,
+//     "enabled": true,
+//     "billable": true,
+//     "color": "#ff9898",
+//     "url": "https://api.nokotime.com/v2/projects/37396",
+//     "group": {
+//       "id": 3768,
+//       "name": "Sprockets, Inc.",
+//       "url": "https://api.nokotime.com/v2/project_groups/3768"
+//     },
+//     "minutes": 180,
+//     "billable_minutes": 120,
+//     "unbillable_minutes": 60,
+//     "invoiced_minutes": 120,
+//     "remaining_minutes": 630,
+//     "budgeted_minutes": 750,
+//     "import": {
+//       "id": 8910,
+//       "url": "https://api.nokotime.com/v2/imports/8910"
+//     },
+//     "invoices": [
+//       {
+//         "id": 12345678,
+//         "reference": "AA001",
+//         "invoice_date": "2013-07-09",
+//         "state": "unpaid",
+//         "total_amount": 189.33,
+//         "url": "https://api.nokotime.com/v2/invoices/12345678"
+//       }
+//     ],
+//     "participants": [
+//       {
+//         "id": 5538,
+//         "email": "john.test@test.com",
+//         "first_name": "John",
+//         "last_name": "Test",
+//         "profile_image_url": "https://api.nokotime.com/images/avatars/0000/0001/avatar.jpg",
+//         "url": "https://api.nokotime.com/v2/users/5538"
+//       }
+//     ],
+//     "entries": 0,
+//     "entries_url": "https://api.nokotime.com/v2/projects/37396/entries",
+//     "expenses": 0,
+//     "expenses_url": "https://api.nokotime.com/v2/projects/37396/expenses",
+//     "created_at": "2012-01-09T08:33:29Z",
+//     "updated_at": "2012-01-09T08:33:29Z",
+//     "merge_url": "https://api.nokotime.com/v2/projects/37396/merge",
+//     "archive_url": "https://api.nokotime.com/v2/projects/37396/archive",
+//     "unarchive_url": "https://api.nokotime.com/v2/projects/37396/unarchive"
+//   }
+// ]
+export interface INokoGetProjectResponse {
+  id: number;
+  name: string;
+  enabled: boolean;
+  participants: { id: number }[];
+}

@@ -7,8 +7,10 @@ onMounted(async () => {
   const store = useApplicationStore();
   await store.hydrate();
 
-  if (store.requiresConfiguration) {
+  if (store.requiresSetup) {
     await router.push("/setup");
+  } else if (store.requiresCategories) {
+    await router.push("/categories");
   }
 });
 </script>
@@ -19,7 +21,9 @@ onMounted(async () => {
       <Suspense>
         <component :is="Component"></component>
 
-        <template #fallback> Loading ... </template>
+        <template #fallback>
+          <p>Loading ...</p>
+        </template>
       </Suspense>
     </Transition>
   </RouterView>

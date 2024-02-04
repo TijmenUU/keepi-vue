@@ -4,24 +4,13 @@ import { DateRange, getWeekDaysFor, getWeekNumber } from "@/date";
 import { toShortDutchDate } from "@/format";
 import { INokoGetEntryResponse } from "@/responses";
 import { useApplicationStore } from "@/store/application-store";
-import { TagToCategoryMapping, loggableDays } from "@/types";
+import { loggableDays } from "@/types";
 import { computed, ref } from "vue";
 
 const editorVersion = ref(0);
 const isReloading = ref(false);
 const startDate = ref(new Date());
 const entries = ref<INokoGetEntryResponse[]>([]);
-
-const categoryMappings: TagToCategoryMapping[] = [
-  { name: "ROB-Net", nokoTags: ["#Development"], projectId: 458127 },
-  { name: "Borrel", nokoTags: ["#Borrel"], projectId: 459899 },
-  {
-    name: "Vakantie",
-    nokoTags: ["#Vakantie-uren-opgenomen"],
-    projectId: 458126,
-  },
-  { name: "Feestag", nokoTags: ["#Nationale-feestdag"], projectId: 458126 },
-];
 
 const applicationStore = useApplicationStore();
 const nokoClient = applicationStore.getNokoClient();
@@ -100,7 +89,6 @@ const onNextWeek = async () => {
       :date-range="dateRange"
       :key="editorVersion"
       :entries="entries"
-      :category-mappings="categoryMappings"
       :disable="isReloading"
       @reload="onReload"
     />

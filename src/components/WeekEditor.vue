@@ -4,7 +4,6 @@ import { DateRange } from "@/date";
 import { INokoGetEntryResponse } from "@/responses";
 import { useApplicationStore } from "@/store/application-store";
 import { convertToTimeTableInput, getNokoCallsForDelta } from "@/transformer";
-import { TagToCategoryMapping } from "@/types";
 import { ref } from "vue";
 
 const isSaving = ref(false);
@@ -12,7 +11,6 @@ const isSaving = ref(false);
 const props = defineProps<{
   dateRange: DateRange;
   entries: INokoGetEntryResponse[];
-  categoryMappings: TagToCategoryMapping[];
   disable: boolean;
 }>();
 
@@ -20,14 +18,17 @@ const emits = defineEmits<{
   (e: "reload"): void;
 }>();
 
-const categories = props.categoryMappings.map((m) => m.name);
-
 const applicationStore = useApplicationStore();
 const nokoClient = applicationStore.getNokoClient();
 
+const categories = applicationStore.categories.map((m) => ({
+  name: m.name,
+  archived: m.archived,
+}));
+
 let initialValues: TimeTableEntry[] = convertToTimeTableInput(
   props.dateRange.dates,
-  props.categoryMappings,
+  applicationStore.categories,
   props.entries
 );
 
@@ -41,7 +42,7 @@ const onSave = async (userInput: TimeTableEntry[]): Promise<void> => {
   try {
     const delta = getNokoCallsForDelta(
       props.dateRange.dates,
-      props.categoryMappings,
+      applicationStore.categories,
       props.entries,
       userInput
     );

@@ -10,6 +10,7 @@ type DayAndTagMapping = {
   projectId: number;
   nokoTags: string[];
   category: string;
+  archived: boolean;
 };
 
 type NokoTimeTableMapping = {
@@ -18,6 +19,7 @@ type NokoTimeTableMapping = {
   projectId: number;
   nokoTags: string[];
   category: string;
+  archived: boolean;
   entries: INokoGetEntryResponse[];
   minutes: number;
 };
@@ -55,14 +57,21 @@ export function getNokoCallsForDelta(
     nokoEntries
   );
 
-  const dayCategoryResults: DayCategoryDelta[] = [];
+  const categoryResultsPerDay: DayCategoryDelta[] = [];
   for (let i = 0; i < preUserInputMapping.length; ++i) {
     const original = preUserInputMapping[i];
+    if (original.archived) {
+      console.debug(
+        `Ignoring any changes made to the archived category ${original.category}.`
+      );
+      continue;
+    }
+
     const userInput = timeTableEntries.find(
       (t) => t.category === original.category && t.day === original.day
     );
     if (userInput) {
-      dayCategoryResults.push(getDayDelta(original, userInput));
+      categoryResultsPerDay.push(getDayDelta(original, userInput));
     } else {
       console.debug(
         `Time table entry for project ${original.category} on ${original.day} seems to be missing?`
@@ -75,7 +84,7 @@ export function getNokoCallsForDelta(
     updates: [],
     idsToDelete: [],
   };
-  dayCategoryResults.forEach((dayResult) => {
+  categoryResultsPerDay.forEach((dayResult) => {
     if (dayResult.create != null) {
       result.creates.push(dayResult.create);
     }
@@ -162,6 +171,7 @@ function getNokoToTimeTableMapping(
       projectId: dtm.projectId,
       nokoTags: dtm.nokoTags,
       category: dtm.category,
+      archived: dtm.archived,
       entries: filteredEntries,
       minutes: filteredEntries.reduce<number>(
         (ec, entry) => ec + entry.minutes,
@@ -195,6 +205,7 @@ function getDayAndTagMapping(
         projectId: categoryMapping[j].projectId,
         nokoTags: categoryMapping[j].nokoTags,
         category: categoryMapping[j].name,
+        archived: categoryMapping[j].archived,
       });
     }
   }

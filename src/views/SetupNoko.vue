@@ -10,7 +10,11 @@ const onSubmit = async () => {
     return;
   }
 
-  await router.push("/");
+  if (applicationStore.requiresCategories) {
+    await router.push("/categories");
+  } else {
+    await router.push("/");
+  }
 };
 </script>
 

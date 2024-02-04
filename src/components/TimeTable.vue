@@ -10,7 +10,7 @@ export type TimeTableEntry = {
 };
 
 const props = defineProps<{
-  inputCategories: string[];
+  inputCategories: { name: string; archived: boolean }[];
   initialValues: TimeTableEntry[];
 }>();
 const emits = defineEmits<{
@@ -24,11 +24,11 @@ const generateValues = (): Record<string, string> => {
   props.inputCategories.forEach((category) => {
     loggableDays.forEach((day) => {
       result.push({
-        category,
+        category: category.name,
         day,
         minutes:
           props.initialValues.find(
-            (e) => e.category === category && e.day === day
+            (e) => e.category === category.name && e.day === day
           )?.minutes ?? 0,
       });
     });
@@ -51,7 +51,7 @@ const summaries = computed<Record<string, string>>(() => {
   const aggregates = props.inputCategories.reduce<Record<string, number>>(
     (acc, entry) => ({
       ...acc,
-      [entry]: 0,
+      [entry.name]: 0,
     }),
     {}
   );
@@ -67,7 +67,7 @@ const summaries = computed<Record<string, string>>(() => {
   return props.inputCategories.reduce<Record<string, string>>(
     (acc, entry) => ({
       ...acc,
-      [entry]: toHoursMinutesNotation(aggregates[entry]),
+      [entry.name]: toHoursMinutesNotation(aggregates[entry.name]),
     }),
     {}
   );
@@ -77,7 +77,7 @@ const total = computed<string>(() => {
   const aggregates = props.inputCategories.reduce<Record<string, number>>(
     (acc, entry) => ({
       ...acc,
-      [entry]: 0,
+      [entry.name]: 0,
     }),
     {}
   );
@@ -93,24 +93,26 @@ const total = computed<string>(() => {
   return toHoursMinutesNotation(
     props.inputCategories.reduce<number>(
       (acc, entry) =>
-        acc + (tryParseHoursMinutesNotation(summaries.value[entry]) ?? 0),
+        acc + (tryParseHoursMinutesNotation(summaries.value[entry.name]) ?? 0),
       0
     )
   );
 });
 
 const splitKey = (key: string): [string, LoggableDay] => {
-  const categoryPart = props.inputCategories.find((c) => key.startsWith(c));
+  const categoryPart = props.inputCategories.find((c) =>
+    key.startsWith(c.name)
+  );
   if (categoryPart == null) {
     throw new Error(`Invalid key ${key}: unknown category`);
   }
 
-  const dayPart = key.substring(categoryPart.length);
+  const dayPart = key.substring(categoryPart.name.length);
   if (!loggableDays.includes(dayPart)) {
     throw new Error(`Invalid key ${key}: unknown day ${dayPart}`);
   }
 
-  return [categoryPart, dayPart];
+  return [categoryPart.name, dayPart];
 };
 
 const onSubmit = () => {
@@ -147,17 +149,23 @@ const onSubmit = () => {
           <th></th>
         </tr>
 
-        <tr v-for="category in inputCategories" :key="category">
-          <td>{{ category }}</td>
-          <td v-for="day in loggableDays" :key="createKey(category, day)">
+        <tr
+          v-for="category in inputCategories"
+          :key="category.name"
+          v-show="summaries[category.name] != '' || !category.archived"
+        >
+          <td>{{ category.name }}</td>
+          <td v-for="day in loggableDays" :key="createKey(category.name, day)">
             <input
-              :name="createKey(category, day)"
+              :name="createKey(category.name, day)"
               type="text"
-              v-model="values[createKey(category, day)]"
+              v-model="values[createKey(category.name, day)]"
+              :readonly="category.archived"
+              :tabindex="category.archived ? -1 : 0"
             />
           </td>
           <td>
-            {{ summaries[category] }}
+            {{ summaries[category.name] }}
           </td>
         </tr>
 

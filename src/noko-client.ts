@@ -5,7 +5,12 @@ import {
   INokoPostEntryRequest,
   INokoPutEntryRequest,
 } from "@/requests";
-import { INokoGetEntryResponse, INokoPostEntryResponse } from "@/responses";
+import {
+  INokoGetEntryResponse,
+  INokoGetProjectResponse,
+  INokoGetTagResponse,
+  INokoPostEntryResponse,
+} from "@/responses";
 
 export default class NokoClient {
   private baseUrl: string;
@@ -84,6 +89,22 @@ export default class NokoClient {
     const options = this.getBaseRequestOptions();
     options.method = "DELETE";
     await this.makeRequest(`/entries/${id}`, options);
+  }
+
+  public async getTags(): Promise<INokoGetTagResponse[]> {
+    const options = this.getBaseRequestOptions();
+    options.method = "GET";
+
+    const response = await this.makeRequest("/tags/?per_page=1000", options);
+    return await response.json();
+  }
+
+  public async getProjects(): Promise<INokoGetProjectResponse[]> {
+    const options = this.getBaseRequestOptions();
+    options.method = "GET";
+
+    const response = await this.makeRequest("/projects/", options);
+    return await response.json();
   }
 
   private async makeRequest(

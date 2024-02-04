@@ -10,6 +10,8 @@ export const loggableDays: string[] = [
 export type LoggableDay = (typeof loggableDays)[number];
 
 export type TagToCategoryMapping = {
+  order: number;
+  archived: boolean;
   projectId: number;
   nokoTags: string[];
   name: string;

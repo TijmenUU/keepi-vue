@@ -14,30 +14,30 @@ describe("transformer", () => {
         getAverageWorkweekEntries()
       );
 
-      expect(result.length).toBe(20);
+      expect(result.length).toBe(28);
 
       expectToHaveTimeTableEntriesForProjectWeekDays(
         "Development",
         result,
-        [480, 480, 420, 0, 480]
+        [480, 480, 420, 0, 480, 0, 0]
       );
 
       expectToHaveTimeTableEntriesForProjectWeekDays(
         "Presentation",
         result,
-        [0, 0, 60, 0, 0]
+        [0, 0, 60, 0, 0, 0, 0]
       );
 
       expectToHaveTimeTableEntriesForProjectWeekDays(
         "National holiday",
         result,
-        [0, 0, 0, 480, 0]
+        [0, 0, 0, 480, 0, 0, 0]
       );
 
       expectToHaveTimeTableEntriesForProjectWeekDays(
         "Vacation",
         result,
-        [0, 0, 0, 0, 0]
+        [0, 0, 0, 0, 0, 0, 0]
       );
     });
 
@@ -49,30 +49,30 @@ describe("transformer", () => {
         getAverageWorkweekEntries().filter((e) => e.date < "2024-01-25")
       );
 
-      expect(result.length).toBe(20);
+      expect(result.length).toBe(28);
 
       expectToHaveTimeTableEntriesForProjectWeekDays(
         "Development",
         result,
-        [480, 480, 420, 0, 0]
+        [480, 480, 420, 0, 0, 0, 0]
       );
 
       expectToHaveTimeTableEntriesForProjectWeekDays(
         "Presentation",
         result,
-        [0, 0, 60, 0, 0]
+        [0, 0, 60, 0, 0, 0, 0]
       );
 
       expectToHaveTimeTableEntriesForProjectWeekDays(
         "National holiday",
         result,
-        [0, 0, 0, 0, 0]
+        [0, 0, 0, 0, 0, 0, 0]
       );
 
       expectToHaveTimeTableEntriesForProjectWeekDays(
         "Vacation",
         result,
-        [0, 0, 0, 0, 0]
+        [0, 0, 0, 0, 0, 0, 0]
       );
     });
 
@@ -83,30 +83,30 @@ describe("transformer", () => {
         getVacationWeekEntries()
       );
 
-      expect(result.length).toBe(20);
+      expect(result.length).toBe(28);
 
       expectToHaveTimeTableEntriesForProjectWeekDays(
         "Development",
         result,
-        [0, 0, 0, 0, 0]
+        [0, 0, 0, 0, 0, 0, 0]
       );
 
       expectToHaveTimeTableEntriesForProjectWeekDays(
         "Presentation",
         result,
-        [0, 0, 0, 0, 0]
+        [0, 0, 0, 0, 0, 0, 0]
       );
 
       expectToHaveTimeTableEntriesForProjectWeekDays(
         "National holiday",
         result,
-        [0, 0, 0, 0, 0]
+        [0, 0, 0, 0, 0, 0, 0]
       );
 
       expectToHaveTimeTableEntriesForProjectWeekDays(
         "Vacation",
         result,
-        [480, 480, 480, 480, 480]
+        [480, 480, 480, 480, 480, 0, 0]
       );
     });
 
@@ -177,30 +177,30 @@ describe("transformer", () => {
         ]
       );
 
-      expect(result.length).toBe(20);
+      expect(result.length).toBe(28);
 
       expectToHaveTimeTableEntriesForProjectWeekDays(
         "Development",
         result,
-        [0, 0, 0, 0, 0]
+        [0, 0, 0, 0, 0, 0, 0]
       );
 
       expectToHaveTimeTableEntriesForProjectWeekDays(
         "Presentation",
         result,
-        [0, 0, 0, 0, 0]
+        [0, 0, 0, 0, 0, 0, 0]
       );
 
       expectToHaveTimeTableEntriesForProjectWeekDays(
         "National holiday",
         result,
-        [0, 0, 0, 0, 0]
+        [0, 0, 0, 0, 0, 0, 0]
       );
 
       expectToHaveTimeTableEntriesForProjectWeekDays(
         "Vacation",
         result,
-        [0, 0, 0, 0, 0]
+        [0, 0, 0, 0, 0, 0, 0]
       );
     });
 
@@ -212,7 +212,7 @@ describe("transformer", () => {
       const categoryEntries = timeTableEntries.filter(
         (r) => r.category === category
       );
-      expect(categoryEntries.length).toBe(5);
+      expect(categoryEntries.length).toBe(7);
 
       if (minutesPerWeekDay.length != loggableDays.length) {
         throw Error(
@@ -466,6 +466,48 @@ describe("transformer", () => {
       expect(result.idsToDelete.length).toBe(0);
       expect(result.updates.length).toBe(0);
     });
+
+    test("ignores archived categories", () => {
+      const weekDays = getTestWeekdays();
+      const categoryMapping = getTestTagToCategoryMappings();
+      categoryMapping[2].archived = true;
+      categoryMapping[3].archived = true;
+      const entries = getAverageWorkweekEntries();
+
+      // The complete average workweek scenario
+      const input = convertToTimeTableInput(weekDays, categoryMapping, entries);
+
+      const result = getNokoCallsForDelta(weekDays, categoryMapping, [], input);
+
+      expect(result.creates.length).toBe(4);
+      expect(result.idsToDelete.length).toBe(0);
+      expect(result.updates.length).toBe(0);
+
+      expect(result.creates).toContainEqual({
+        date: "2024-01-22",
+        minutes: 480,
+        project_id: 1,
+        description: "#Development",
+      });
+      expect(result.creates).toContainEqual({
+        date: "2024-01-23",
+        minutes: 480,
+        project_id: 1,
+        description: "#Development",
+      });
+      expect(result.creates).toContainEqual({
+        date: "2024-01-24",
+        minutes: 420,
+        project_id: 1,
+        description: "#Development",
+      });
+      expect(result.creates).toContainEqual({
+        date: "2024-01-26",
+        minutes: 480,
+        project_id: 1,
+        description: "#Development",
+      });
+    });
   });
 });
 
@@ -589,24 +631,26 @@ function getAverageWorkweekEntries(): INokoGetEntryResponse[] {
 //                  | Monday | Tuesday | Wednesday | Thursday | Friday
 // Vacation         | 8h     | 8h      | 8h        | 8h       | 8h
 function getVacationWeekEntries(): INokoGetEntryResponse[] {
-  return getTestWeekdays().map((date, index) => ({
-    id: 5010 + index,
-    date: toShortIsoDate(date),
-    user: {
-      id: 9000,
-    },
-    minutes: 480, // 8 hours
-    description: "#Vacation",
-    project: {
-      id: 3,
-    },
-    tags: [
-      {
-        id: 4003,
-        formatted_name: "#Vacation",
+  return getTestWeekdays()
+    .slice(0, 5)
+    .map((date, index) => ({
+      id: 5010 + index,
+      date: toShortIsoDate(date),
+      user: {
+        id: 9000,
       },
-    ],
-  }));
+      minutes: 480, // 8 hours
+      description: "#Vacation",
+      project: {
+        id: 3,
+      },
+      tags: [
+        {
+          id: 4003,
+          formatted_name: "#Vacation",
+        },
+      ],
+    }));
 }
 
 function getTestWeekdays(): Date[] {
@@ -616,14 +660,40 @@ function getTestWeekdays(): Date[] {
     new Date("2024-01-24T00:00:00Z"), // wednesday
     new Date("2024-01-25T00:00:00Z"), // thursday
     new Date("2024-01-26T00:00:00Z"), // friday
+    new Date("2024-01-27T00:00:00Z"), // saturday
+    new Date("2024-01-28T00:00:00Z"), // sunday
   ];
 }
 
 function getTestTagToCategoryMappings(): TagToCategoryMapping[] {
   return [
-    { name: "Development", projectId: 1, nokoTags: ["#Development"] },
-    { name: "Vacation", projectId: 3, nokoTags: ["#Vacation"] },
-    { name: "National holiday", projectId: 2, nokoTags: ["#National-Holiday"] },
-    { name: "Presentation", projectId: 1, nokoTags: ["#Presentation"] },
+    {
+      order: 1,
+      archived: false,
+      name: "Development",
+      projectId: 1,
+      nokoTags: ["#Development"],
+    },
+    {
+      order: 2,
+      archived: false,
+      name: "Vacation",
+      projectId: 3,
+      nokoTags: ["#Vacation"],
+    },
+    {
+      order: 3,
+      archived: false,
+      name: "National holiday",
+      projectId: 2,
+      nokoTags: ["#National-Holiday"],
+    },
+    {
+      order: 4,
+      archived: false,
+      name: "Presentation",
+      projectId: 1,
+      nokoTags: ["#Presentation"],
+    },
   ];
 }
