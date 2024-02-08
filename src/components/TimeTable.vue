@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import KeepiButton from "@/components/KeepiButton.vue";
+import KeepiInput from "@/components/KeepiInput.vue";
 import { toHoursMinutesNotation, tryParseHoursMinutesNotation } from "@/format";
 import { LoggableDay, loggableDays } from "@/types";
 import { computed, reactive } from "vue";
@@ -139,12 +141,12 @@ const onSubmit = () => {
 
 <template>
   <div>
-    <div style="max-width: 100vw; overflow-x: scroll">
+    <div>
       <table>
         <tr>
           <th></th>
           <th v-for="day in loggableDays" :key="day">
-            {{ day }}
+            {{ day.substring(0, 2) }}
           </th>
           <th></th>
         </tr>
@@ -154,52 +156,41 @@ const onSubmit = () => {
           :key="category.name"
           v-show="summaries[category.name] != '' || !category.archived"
         >
-          <td>{{ category.name }}</td>
+          <td>
+            <span class="pr-1">{{ category.name }}</span>
+          </td>
           <td v-for="day in loggableDays" :key="createKey(category.name, day)">
-            <input
+            <KeepiInput
               :name="createKey(category.name, day)"
-              type="text"
               v-model="values[createKey(category.name, day)]"
               :readonly="category.archived"
               :tabindex="category.archived ? -1 : 0"
             />
           </td>
-          <td>
-            {{ summaries[category.name] }}
+          <td class="text-center">
+            <span class="pl-1">{{ summaries[category.name] }}</span>
           </td>
         </tr>
 
         <tr>
           <td></td>
           <td :colspan="loggableDays.length - 1"></td>
-          <td>Totaal</td>
-          <td style="border-top: 1px white solid">
+          <td class="text-sm text-center">Totaal</td>
+          <td class="text-center">
             {{ total }}
           </td>
         </tr>
       </table>
     </div>
 
-    <div
-      style="
-        display: flex;
-        width: 100%;
-        flex-direction: row-reverse;
-        padding-top: 10px;
-      "
-    >
-      <button @click="onSubmit">Opslaan</button>
+    <div class="w-full flex justify-end mt-3">
+      <KeepiButton @click="onSubmit" variant="green">Opslaan</KeepiButton>
     </div>
   </div>
 </template>
 
-<style>
-table {
-  word-break: keep-all;
-}
-
+<style scoped>
 input {
-  width: 80px;
-  text-align: center;
+  width: 60px;
 }
 </style>

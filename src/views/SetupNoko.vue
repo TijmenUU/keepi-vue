@@ -1,31 +1,53 @@
 <script setup lang="ts">
+import KeepiButton from "@/components/KeepiButton.vue";
+import KeepiInput from "@/components/KeepiInput.vue";
 import { useApplicationStore } from "@/store/application-store";
+import { ref } from "vue";
 import { useRouter } from "vue-router";
 
 const router = useRouter();
 const applicationStore = useApplicationStore();
 
+const isSubmitting = ref(false);
+
 const onSubmit = async () => {
-  if (!(await applicationStore.tryLoadApiKey())) {
+  if (isSubmitting.value) {
     return;
   }
+  isSubmitting.value = true;
 
-  if (applicationStore.requiresCategories) {
-    await router.push("/categories");
-  } else {
-    await router.push("/");
+  try {
+    if (!(await applicationStore.tryLoadApiKey())) {
+      return;
+    }
+
+    if (applicationStore.requiresCategories) {
+      await router.push("/categories");
+    } else {
+      await router.push("/");
+    }
+  } finally {
+    isSubmitting.value = false;
   }
 };
 </script>
 
 <template>
-  <div style="display: flex; flex-direction: column">
-    <label>
-      Noko API key
+  <div
+    class="lg:container mx-auto flex flex-col items-center justify-center py-3"
+  >
+    <label class="mb-3">
+      <span class="font-bold mr-3">Noko API key</span>
 
-      <input type="text" v-model="applicationStore.apiKey" />
+      <KeepiInput
+        type="text"
+        v-model="applicationStore.apiKey"
+        :disabled="isSubmitting"
+      />
     </label>
 
-    <button style="margin-top: 10px" @click="onSubmit">Opslaan</button>
+    <KeepiButton @click="onSubmit" :disabled="isSubmitting" variant="green"
+      >Opslaan</KeepiButton
+    >
   </div>
 </template>
