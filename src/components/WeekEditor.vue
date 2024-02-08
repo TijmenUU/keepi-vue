@@ -11,7 +11,7 @@ const isSaving = ref(false);
 const props = defineProps<{
   dateRange: DateRange;
   entries: INokoGetEntryResponse[];
-  disable: boolean;
+  disabled: boolean;
 }>();
 
 const emits = defineEmits<{
@@ -74,18 +74,13 @@ const onSave = async (userInput: TimeTableEntry[]): Promise<void> => {
 </script>
 
 <template>
-  <div style="position: relative">
+  <div
+    class="relative transition duration-200"
+    :class="{ 'blur-sm': isSaving || props.disabled }"
+  >
     <div
-      v-if="isSaving || disable"
-      style="
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(250, 250, 250, 0.1);
-        z-index: 10;
-      "
+      class="absolute top-0 left-0 w-full h-full z-10 cursor-not-allowed"
+      v-if="isSaving || props.disabled"
     ></div>
 
     <TimeTable

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import KeepiButton from "@/components/KeepiButton.vue";
 import WeekEditor from "@/components/WeekEditor.vue";
 import { DateRange, getWeekDaysFor, getWeekNumber } from "@/date";
 import { toShortDutchDate } from "@/format";
@@ -68,28 +69,28 @@ const onNextWeek = async () => {
 </script>
 
 <template>
-  <div>
-    <h2>Week {{ dateRange.weekNumber }}</h2>
+  <div class="lg:container mx-auto flex flex-col items-center py-3">
+    <h2 class="text-2xl">Week {{ dateRange.weekNumber }}</h2>
 
-    <div style="display: flex; align-items: center; justify-content: center">
-      <button @click="onPreviousWeek">Vorige</button>
-      <button
-        style="margin-left: 10px; margin-right: 10px"
+    <p class="text-gray-500">{{ dateRangeDescription }}</p>
+
+    <div class="flex space-x-2 py-3">
+      <KeepiButton @click="onPreviousWeek">Vorige</KeepiButton>
+      <KeepiButton
         :disabled="currentWeek === dateRange.weekNumber"
         @click="onToday"
       >
         Vandaag
-      </button>
-      <button @click="onNextWeek">Volgende</button>
+      </KeepiButton>
+      <KeepiButton @click="onNextWeek">Volgende</KeepiButton>
     </div>
 
-    <p>{{ dateRangeDescription }}</p>
-
     <WeekEditor
+      class="mt-3"
       :date-range="dateRange"
       :key="editorVersion"
       :entries="entries"
-      :disable="isReloading"
+      :disabled="isReloading"
       @reload="onReload"
     />
   </div>

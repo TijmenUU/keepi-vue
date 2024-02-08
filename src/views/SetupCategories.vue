@@ -1,10 +1,19 @@
 <script setup lang="ts">
+import KeepiButton from "@/components/KeepiButton.vue";
+import KeepiCheckbox from "@/components/KeepiCheckbox.vue";
+import KeepiInput from "@/components/KeepiInput.vue";
 import { useApplicationStore } from "@/store/application-store";
-import { TagToCategoryMapping } from "@/types";
-import { computed, reactive } from "vue";
+import { computed, reactive, ref } from "vue";
 import { useRouter } from "vue-router";
 
-type CategoryEntry = TagToCategoryMapping & { id: number };
+type CategoryEntry = {
+  id: number;
+  order: string;
+  archived: boolean;
+  projectId: number;
+  nokoTags: string[];
+  name: string;
+};
 
 const router = useRouter();
 const applicationStore = useApplicationStore();
@@ -19,6 +28,7 @@ const projects = (await nokoClient.getProjects())
   .map((p) => ({ id: p.id, name: p.name }));
 const tags = (await nokoClient.getTags()).map((t) => t.formatted_name);
 
+const isSubmitting = ref(false);
 const toAdd = reactive({
   name: "",
   projectId: "",
@@ -31,12 +41,12 @@ const values: CategoryEntry[] = reactive(
     .map((c, index) => ({
       id: nextCategoryId++,
       archived: c.archived,
-      order: index,
+      order: index.toString(),
       projectId: c.projectId,
       nokoTags: c.nokoTags.slice(),
       name: c.name,
     }))
-    .sort((a, b) => a.order - b.order)
+    .sort((a, b) => parseInt(a.order) - parseInt(b.order))
 );
 
 const getProjectName = (id: number): string => {
@@ -66,6 +76,8 @@ const onAddTag = (tag: string) => {
   if (tag != null && tag.length > 0 && !toAdd.nokoTags.some((t) => t === tag)) {
     toAdd.nokoTags.push(tag);
   }
+  toAdd.tagSearch = "";
+  document.getElementsByName("tagsearch")[0].focus();
 };
 
 const onAddCategory = () => {
@@ -93,12 +105,16 @@ const onAddCategory = () => {
   values.push({
     id: nextCategoryId++,
     archived: false,
-    order: values.length,
+    order: values.length.toString(),
     projectId,
     nokoTags: toAdd.nokoTags,
     name: toAdd.name,
   });
 
+  onResetAdd();
+};
+
+const onResetAdd = (): void => {
   toAdd.name = "";
   toAdd.projectId = "";
   toAdd.tagSearch = "";
@@ -106,36 +122,52 @@ const onAddCategory = () => {
 };
 
 const onSubmit = async () => {
-  if (values.length < 1) {
-    return;
-  }
-  if (
-    values.some((v1) =>
-      values.some((v2) => v1.order == v2.order && v1.id !== v2.id)
-    )
-  ) {
-    return;
-  }
-  if (
-    values.some((v1) =>
-      values.some((v2) => v1.name == v2.name && v1.id !== v2.id)
-    )
-  ) {
+  if (isSubmitting.value) {
     return;
   }
 
-  applicationStore.categories = values
-    .slice()
-    .sort((a, b) => a.order - b.order);
-  applicationStore.peristCategories();
+  isSubmitting.value = true;
 
-  await router.push("/");
+  try {
+    if (values.length < 1) {
+      return;
+    }
+    if (
+      values.some((v1) =>
+        values.some((v2) => v1.order == v2.order && v1.id !== v2.id)
+      )
+    ) {
+      return;
+    }
+    if (
+      values.some((v1) =>
+        values.some((v2) => v1.name == v2.name && v1.id !== v2.id)
+      )
+    ) {
+      return;
+    }
+
+    applicationStore.categories = values
+      .map((v) => ({
+        order: parseInt(v.order),
+        archived: v.archived,
+        projectId: v.projectId,
+        nokoTags: v.nokoTags,
+        name: v.name,
+      }))
+      .sort((a, b) => a.order - b.order);
+    applicationStore.peristCategories();
+
+    await router.push("/");
+  } finally {
+    isSubmitting.value = false;
+  }
 };
 </script>
 
 <template>
-  <div style="display: flex; flex-direction: column">
-    <table>
+  <div class="lg:container mx-auto flex flex-col items-center py-3">
+    <table class="text-center" :class="{ 'blur-sm': isSubmitting }">
       <tr>
         <th>Volgorde</th>
         <th>Naam</th>
@@ -145,30 +177,89 @@ const onSubmit = async () => {
         <th></th>
       </tr>
 
-      <tr v-for="value in values" :key="value.id">
-        <td>
-          <input v-model="value.order" />
-        </td>
-        <td>
-          <input v-model="value.name" />
-        </td>
-        <td>{{ getProjectName(value.projectId) }}</td>
-        <td>{{ value.nokoTags.join(", ") }}</td>
-        <td>
-          <input v-model="value.archived" type="checkbox" />
-        </td>
-        <td>
-          <button @click="onDeleteValue(value.id)">Verwijder</button>
-        </td>
+      <template v-if="values.length > 0">
+        <tr v-for="value in values" :key="value.id">
+          <td>
+            <KeepiInput
+              style="width: 40px"
+              v-model="value.order"
+              type="number"
+            />
+          </td>
+          <td>
+            <KeepiInput v-model="value.name" />
+          </td>
+          <td>{{ getProjectName(value.projectId) }}</td>
+          <td>{{ value.nokoTags.join(", ") }}</td>
+          <td>
+            <KeepiCheckbox v-model="value.archived" type="checkbox" />
+          </td>
+          <td>
+            <button
+              @click="onDeleteValue(value.id)"
+              :disabled="isSubmitting"
+              class="text-red-600 hover:text-red-400 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="1.5"
+                stroke="currentColor"
+                class="w-6 h-6"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
+                />
+              </svg>
+            </button>
+          </td>
+        </tr>
+      </template>
+      <template v-else>
+        <tr>
+          <td colspan="99" class="text-gray-400">
+            Er zijn nog geen categorieën aangemaakt
+          </td>
+        </tr>
+      </template>
+
+      <tr>
+        <td colspan="99" class="h-10"></td>
       </tr>
 
       <tr>
-        <td></td>
-        <td>
-          <input v-model="toAdd.name" />
+        <td class="align-top">
+          <button
+            @click="onResetAdd"
+            class="text-gray-400 hover:text-white transition-color duration-200"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="1.5"
+              stroke="currentColor"
+              class="w-5 h-5"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"
+              />
+            </svg>
+          </button>
         </td>
-        <td>
-          <select v-model="toAdd.projectId">
+        <td class="align-top">
+          <KeepiInput autofocus v-model="toAdd.name" />
+        </td>
+        <td class="align-top">
+          <select
+            class="rounded border border-gray-600 bg-transparent px-1"
+            v-model="toAdd.projectId"
+          >
             <option default disabled value="">Maak een keuze</option>
             <option
               v-for="project in projects"
@@ -179,14 +270,33 @@ const onSubmit = async () => {
             </option>
           </select>
         </td>
-        <td style="display: flex; flex-direction: column">
-          <span>{{ toAdd.nokoTags.join(", ") }}</span>
+        <td>
+          <div class="flex flex-col space-y-2">
+            <span
+              v-if="toAdd.nokoTags.length > 0"
+              class="whitespace-nowrap overflow-ellipsis"
+              >{{ toAdd.nokoTags.join(", ") }}</span
+            >
+            <span v-else class="text-gray-400">~</span>
 
-          <input v-model="toAdd.tagSearch" />
-          <div style="display: flex; flex-direction: column">
-            <div style="display: flex" v-for="tag in filteredTags" :key="tag">
-              <span>{{ tag }}</span>
-              <button @click="onAddTag(tag)">+</button>
+            <KeepiInput
+              v-model="toAdd.tagSearch"
+              name="tagsearch"
+              placeholder="Zoek op naam..."
+            />
+            <div class="flex flex-col space-y-1">
+              <div
+                class="flex items-center"
+                v-for="tag in filteredTags"
+                :key="tag"
+              >
+                <button
+                  class="text-gray-300 hover:text-white transition-color duration-200"
+                  @click="onAddTag(tag)"
+                >
+                  <span class="text-sm overflow-ellipsis">{{ tag }}</span>
+                </button>
+              </div>
             </div>
           </div>
           <!-- todo add tag suggestions here -->
@@ -194,18 +304,21 @@ const onSubmit = async () => {
         <td>
           <!-- Adding archived tags is not in scope for now -->
         </td>
-        <td>
-          <button @click="onAddCategory()">Toevoegen</button>
+        <td class="align-top">
+          <KeepiButton @click="onAddCategory()" :disabled="isSubmitting"
+            >Toevoegen</KeepiButton
+          >
         </td>
       </tr>
     </table>
 
-    <button style="margin-top: 10px" @click="onSubmit">Opslaan</button>
+    <div class="w-full flex justify-center mt-3">
+      <KeepiButton
+        @click="onSubmit"
+        variant="green"
+        :disabled="isSubmitting || values.length < 1"
+        >Opslaan</KeepiButton
+      >
+    </div>
   </div>
 </template>
-
-<style scoped>
-td {
-  vertical-align: top;
-}
-</style>
