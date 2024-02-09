@@ -31,32 +31,7 @@ export function toHoursMinutesNotation(minutes: number): string {
   return result;
 }
 
-export function toColonSeparatedTime(minutes: number): string {
-  if (minutes < 0) {
-    throw new Error("Negative values are not supported");
-  }
-
-  const hours = Math.floor(minutes / 60);
-  const minutesRemainder = minutes - hours * 60;
-  return `${String(hours).padStart(2, "0")}:${String(minutesRemainder).padStart(
-    2,
-    "0"
-  )}`;
-}
-
-export function tryParseColonSeparatedTime(userValue: string): number | null {
-  const trimmedValue = userValue.trim();
-  if (/^[0-9]?[0-9]:[0-5][0-9]$/.test(trimmedValue)) {
-    const values = trimmedValue.split(":");
-    const hours = parseInt(values[0]);
-    const minutes = parseInt(values[1]);
-
-    return minutes + hours * 60;
-  }
-  return null;
-}
-
-export function tryParseHoursMinutesNotation(userValue: string): number | null {
+export function tryParseTimeNotation(userValue: string): number | null {
   const trimmedValue = userValue.trim();
   if (/^[0-9]+(h|u)(\s)*[0-9]+m$/.test(trimmedValue)) {
     // example: 1h30m
@@ -66,6 +41,10 @@ export function tryParseHoursMinutesNotation(userValue: string): number | null {
     const minutes = parseInt(minutesPart.substring(0, minutesPart.length - 1));
 
     return minutes + hours * 60;
+  } else if (/^[0-9]+?$/.test(trimmedValue)) {
+    // example: 1
+    const hours = parseInt(trimmedValue);
+    return hours * 60;
   } else if (/^[0-9]+(h|u)$/.test(trimmedValue)) {
     // example: 1h
     const hours = parseInt(trimmedValue.substring(0, trimmedValue.length - 1));
@@ -76,6 +55,13 @@ export function tryParseHoursMinutesNotation(userValue: string): number | null {
       trimmedValue.substring(0, trimmedValue.length - 1)
     );
     return minutes;
+  } else if (/^[0-9]?[0-9]:[0-5][0-9]$/.test(trimmedValue)) {
+    // example: 9:35 or 0:30
+    const values = trimmedValue.split(":");
+    const hours = parseInt(values[0]);
+    const minutes = parseInt(values[1]);
+
+    return minutes + hours * 60;
   }
   return null;
 }

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import KeepiButton from "@/components/KeepiButton.vue";
 import KeepiInput from "@/components/KeepiInput.vue";
-import { toHoursMinutesNotation, tryParseHoursMinutesNotation } from "@/format";
+import { toHoursMinutesNotation, tryParseTimeNotation } from "@/format";
 import { LoggableDay, loggableDays } from "@/types";
 import { computed, reactive } from "vue";
 
@@ -59,7 +59,7 @@ const summaries = computed<Record<string, string>>(() => {
   );
 
   Object.keys(values).forEach((key) => {
-    const value = tryParseHoursMinutesNotation(values[key]);
+    const value = tryParseTimeNotation(values[key]);
     if (value != null) {
       const parts = splitKey(key);
       aggregates[parts[0]] += value;
@@ -85,7 +85,7 @@ const total = computed<string>(() => {
   );
 
   Object.keys(values).forEach((key) => {
-    const value = tryParseHoursMinutesNotation(values[key]);
+    const value = tryParseTimeNotation(values[key]);
     if (value != null) {
       const parts = splitKey(key);
       aggregates[parts[0]] += value;
@@ -95,7 +95,7 @@ const total = computed<string>(() => {
   return toHoursMinutesNotation(
     props.inputCategories.reduce<number>(
       (acc, entry) =>
-        acc + (tryParseHoursMinutesNotation(summaries.value[entry.name]) ?? 0),
+        acc + (tryParseTimeNotation(summaries.value[entry.name]) ?? 0),
       0
     )
   );
@@ -123,7 +123,7 @@ const onSubmit = () => {
   const results: TimeTableEntry[] = [];
   for (const [key, value] of entries) {
     const [category, day] = splitKey(key);
-    const minutes = !!value ? tryParseHoursMinutesNotation(value) : 0;
+    const minutes = !!value ? tryParseTimeNotation(value) : 0;
     if (minutes == null) {
       throw new Error(`${value} cannot be parsed as 00u00m`);
     }
@@ -167,7 +167,7 @@ const onSubmit = () => {
               :tabindex="category.archived ? -1 : 0"
             />
           </td>
-          <td class="text-center">
+          <td class="text-center text-gray-500">
             <span class="pl-1">{{ summaries[category.name] }}</span>
           </td>
         </tr>
@@ -175,8 +175,8 @@ const onSubmit = () => {
         <tr>
           <td></td>
           <td :colspan="loggableDays.length - 1"></td>
-          <td class="text-sm text-center">Totaal</td>
-          <td class="text-center">
+          <td class="text-center text-gray-500">Totaal</td>
+          <td class="text-center text-gray-500">
             {{ total }}
           </td>
         </tr>
