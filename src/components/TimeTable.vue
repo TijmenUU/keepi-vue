@@ -167,7 +167,7 @@ const onSubmit = () => {
               :tabindex="category.archived ? -1 : 0"
             />
           </td>
-          <td class="text-center">
+          <td class="text-center text-gray-500">
             <span class="pl-1">{{ summaries[category.name] }}</span>
           </td>
         </tr>
@@ -175,8 +175,8 @@ const onSubmit = () => {
         <tr>
           <td></td>
           <td :colspan="loggableDays.length - 1"></td>
-          <td class="text-sm text-center">Totaal</td>
-          <td class="text-center">
+          <td class="text-center text-gray-500">Totaal</td>
+          <td class="text-center text-gray-500">
             {{ total }}
           </td>
         </tr>
