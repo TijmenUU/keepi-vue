@@ -24,5 +24,8 @@ dist-ssr
 # Bun
 *.lockb
 
+# NPM
+package-lock.json
+
 # Project stuff
 examples/
