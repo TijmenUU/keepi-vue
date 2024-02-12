@@ -1,0 +1,12 @@
+{
+  "routes": [
+    {
+      "route": "/setup",
+      "rewrite": "/"
+    },
+    {
+      "route": "/categories",
+      "rewrite": "/"
+    }
+  ]
+}
