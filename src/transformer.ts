@@ -38,10 +38,10 @@ type DayCategoryDelta = {
 export function convertToTimeTableInput(
   weekDays: Date[],
   categoryMapping: TagToCategoryMapping[],
-  entries: INokoGetEntryResponse[]
+  entries: INokoGetEntryResponse[],
 ): TimeTableEntry[] {
   return getNokoToTimeTableMapping(weekDays, categoryMapping, entries).map(
-    (m) => ({ category: m.category, day: m.day, minutes: m.minutes })
+    (m) => ({ category: m.category, day: m.day, minutes: m.minutes }),
   );
 }
 
@@ -49,12 +49,12 @@ export function getNokoCallsForDelta(
   weekDays: Date[],
   categoryMapping: TagToCategoryMapping[],
   nokoEntries: INokoGetEntryResponse[],
-  timeTableEntries: TimeTableEntry[]
+  timeTableEntries: TimeTableEntry[],
 ): TimeTableDelta {
   const preUserInputMapping = getNokoToTimeTableMapping(
     weekDays,
     categoryMapping,
-    nokoEntries
+    nokoEntries,
   );
 
   const categoryResultsPerDay: DayCategoryDelta[] = [];
@@ -62,19 +62,19 @@ export function getNokoCallsForDelta(
     const original = preUserInputMapping[i];
     if (original.archived) {
       console.debug(
-        `Ignoring any changes made to the archived category ${original.category}.`
+        `Ignoring any changes made to the archived category ${original.category}.`,
       );
       continue;
     }
 
     const userInput = timeTableEntries.find(
-      (t) => t.category === original.category && t.day === original.day
+      (t) => t.category === original.category && t.day === original.day,
     );
     if (userInput) {
       categoryResultsPerDay.push(getDayDelta(original, userInput));
     } else {
       console.debug(
-        `Time table entry for project ${original.category} on ${original.day} seems to be missing?`
+        `Time table entry for project ${original.category} on ${original.day} seems to be missing?`,
       );
     }
   }
@@ -100,7 +100,7 @@ export function getNokoCallsForDelta(
 
 function getDayDelta(
   original: NokoTimeTableMapping,
-  userInput: TimeTableEntry
+  userInput: TimeTableEntry,
 ): DayCategoryDelta {
   // No changes
   if (original.minutes === userInput.minutes) {
@@ -150,7 +150,7 @@ function getDayDelta(
 function getNokoToTimeTableMapping(
   weekDays: Date[],
   categoryMapping: TagToCategoryMapping[],
-  entries: INokoGetEntryResponse[]
+  entries: INokoGetEntryResponse[],
 ): NokoTimeTableMapping[] {
   const dayAndTagMapping = getDayAndTagMapping(weekDays, categoryMapping);
   return dayAndTagMapping.map((dtm) => {
@@ -161,8 +161,8 @@ function getNokoToTimeTableMapping(
         e.project.id === dtm.projectId &&
         dtm.nokoTags.length == e.tags.length &&
         dtm.nokoTags.every((mt) =>
-          e.tags.some((et) => et.formatted_name === mt)
-        )
+          e.tags.some((et) => et.formatted_name === mt),
+        ),
     );
 
     return {
@@ -175,7 +175,7 @@ function getNokoToTimeTableMapping(
       entries: filteredEntries,
       minutes: filteredEntries.reduce<number>(
         (ec, entry) => ec + entry.minutes,
-        0
+        0,
       ),
     };
   });
@@ -183,11 +183,11 @@ function getNokoToTimeTableMapping(
 
 function getDayAndTagMapping(
   weekDays: Date[],
-  categoryMapping: TagToCategoryMapping[]
+  categoryMapping: TagToCategoryMapping[],
 ): DayAndTagMapping[] {
   if (weekDays.length !== loggableDays.length) {
     throw new Error(
-      "The week days should match the loggable days as they are assumed to be a 1:1 mapping"
+      "The week days should match the loggable days as they are assumed to be a 1:1 mapping",
     );
   }
 

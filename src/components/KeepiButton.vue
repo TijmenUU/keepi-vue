@@ -7,7 +7,7 @@ const props = withDefaults(
   {
     variant: "outline",
     disabled: false,
-  }
+  },
 );
 
 const emits = defineEmits<{
@@ -25,12 +25,12 @@ const onClick = () => {
 <template>
   <button
     :class="{
-      'rounded border transition duration-200 p-2': true,
+      'rounded border p-2 transition duration-200': true,
       'border-gray-400 hover:bg-gray-600': props.variant === 'outline',
       'border-none bg-blue-800 hover:bg-blue-600': props.variant === 'blue',
       'border-none bg-green-800 hover:bg-green-600': props.variant === 'green',
       'border-none bg-red-800 hover:bg-red-600': props.variant === 'red',
-      'opacity-50 cursor-not-allowed': props.disabled,
+      'cursor-not-allowed opacity-50': props.disabled,
     }"
     @click="onClick"
   >

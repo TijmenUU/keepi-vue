@@ -34,10 +34,10 @@ const onSubmit = async () => {
 
 <template>
   <div
-    class="lg:container mx-auto flex flex-col items-center justify-center py-3"
+    class="mx-auto flex flex-col items-center justify-center py-3 lg:container"
   >
     <label class="mb-3">
-      <span class="font-bold mr-3">Noko API key</span>
+      <span class="mr-3 font-bold">Noko API key</span>
 
       <KeepiInput
         type="text"

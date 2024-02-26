@@ -30,7 +30,7 @@ const generateValues = (): Record<string, string> => {
         day,
         minutes:
           props.initialValues.find(
-            (e) => e.category === category.name && e.day === day
+            (e) => e.category === category.name && e.day === day,
           )?.minutes ?? 0,
       });
     });
@@ -40,10 +40,10 @@ const generateValues = (): Record<string, string> => {
     (acc, entry) => ({
       ...acc,
       [createKey(entry.category, entry.day)]: toHoursMinutesNotation(
-        entry.minutes
+        entry.minutes,
       ),
     }),
-    {}
+    {},
   );
 };
 
@@ -55,7 +55,7 @@ const summaries = computed<Record<string, string>>(() => {
       ...acc,
       [entry.name]: 0,
     }),
-    {}
+    {},
   );
 
   Object.keys(values).forEach((key) => {
@@ -71,7 +71,7 @@ const summaries = computed<Record<string, string>>(() => {
       ...acc,
       [entry.name]: toHoursMinutesNotation(aggregates[entry.name]),
     }),
-    {}
+    {},
   );
 });
 
@@ -81,7 +81,7 @@ const total = computed<string>(() => {
       ...acc,
       [entry.name]: 0,
     }),
-    {}
+    {},
   );
 
   Object.keys(values).forEach((key) => {
@@ -96,14 +96,14 @@ const total = computed<string>(() => {
     props.inputCategories.reduce<number>(
       (acc, entry) =>
         acc + (tryParseTimeNotation(summaries.value[entry.name]) ?? 0),
-      0
-    )
+      0,
+    ),
   );
 });
 
 const splitKey = (key: string): [string, LoggableDay] => {
   const categoryPart = props.inputCategories.find((c) =>
-    key.startsWith(c.name)
+    key.startsWith(c.name),
   );
   if (categoryPart == null) {
     throw new Error(`Invalid key ${key}: unknown category`);
@@ -183,7 +183,7 @@ const onSubmit = () => {
       </table>
     </div>
 
-    <div class="w-full flex justify-end mt-3">
+    <div class="mt-3 flex w-full justify-end">
       <KeepiButton @click="onSubmit" variant="green">Opslaan</KeepiButton>
     </div>
   </div>

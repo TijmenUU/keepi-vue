@@ -14,7 +14,7 @@ const props = withDefaults(
     readonly: false,
     tabIndex: 0,
     autofocus: false,
-  }
+  },
 );
 
 const emits = defineEmits<{
@@ -24,7 +24,7 @@ const emits = defineEmits<{
 
 <template>
   <input
-    class="border-b border-gray-600 text-center bg-gray-800 focus:outline-none focus:ring-2 ring-gray-400 rounded"
+    class="rounded border-b border-gray-600 bg-gray-800 text-center ring-gray-400 focus:outline-none focus:ring-2"
     :name="props.name"
     :type="props.type"
     :value="props.modelValue"
@@ -32,7 +32,7 @@ const emits = defineEmits<{
     @input="
       emits(
         'update:modelValue',
-        ($event.target as HTMLInputElement)?.value ?? ''
+        ($event.target as HTMLInputElement)?.value ?? '',
       )
     "
     :readonly="props.readonly"
