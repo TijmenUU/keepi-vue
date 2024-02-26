@@ -22,8 +22,8 @@ const currentWeek = getWeekNumber(new Date());
 const dateRangeDescription = computed<string>(
   () =>
     `${toShortDutchDate(dateRange.value.dates[0])} t/m ${toShortDutchDate(
-      dateRange.value.dates[loggableDays.length - 1]
-    )}`
+      dateRange.value.dates[loggableDays.length - 1],
+    )}`,
 );
 
 const onReload = async (): Promise<void> => {
@@ -35,7 +35,7 @@ const onReload = async (): Promise<void> => {
   try {
     entries.value = await nokoClient.getEntries(
       dateRange.value.dates[0],
-      dateRange.value.dates[dateRange.value.dates.length - 1]
+      dateRange.value.dates[dateRange.value.dates.length - 1],
     );
     editorVersion.value += 1;
   } finally {
@@ -59,7 +59,7 @@ const onToday = async () => {
 
 const onNextWeek = async () => {
   const firstDateNextWeek = new Date(
-    dateRange.value.dates[dateRange.value.dates.length - 1]
+    dateRange.value.dates[dateRange.value.dates.length - 1],
   );
   firstDateNextWeek.setDate(firstDateNextWeek.getDate() + 1);
   startDate.value = firstDateNextWeek;
@@ -69,7 +69,7 @@ const onNextWeek = async () => {
 </script>
 
 <template>
-  <div class="lg:container mx-auto flex flex-col items-center py-3">
+  <div class="mx-auto flex flex-col items-center py-3 lg:container">
     <h2 class="text-2xl">Week {{ dateRange.weekNumber }}</h2>
 
     <p class="text-gray-500">{{ dateRangeDescription }}</p>

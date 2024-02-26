@@ -15,9 +15,9 @@ const emits = defineEmits<{
     @change="
       emits(
         'update:modelValue',
-        ($event.target as HTMLInputElement)?.checked ?? false
+        ($event.target as HTMLInputElement)?.checked ?? false,
       )
     "
-    class="w-4 h-4 rounded"
+    class="h-4 w-4 rounded"
   />
 </template>

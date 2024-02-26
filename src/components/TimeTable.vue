@@ -30,7 +30,7 @@ const generateValues = (): Record<string, string> => {
         day,
         minutes:
           props.initialValues.find(
-            (e) => e.category === category.name && e.day === day
+            (e) => e.category === category.name && e.day === day,
           )?.minutes ?? 0,
       });
     });
@@ -40,10 +40,10 @@ const generateValues = (): Record<string, string> => {
     (acc, entry) => ({
       ...acc,
       [createKey(entry.category, entry.day)]: toHoursMinutesNotation(
-        entry.minutes
+        entry.minutes,
       ),
     }),
-    {}
+    {},
   );
 };
 
@@ -55,7 +55,7 @@ const summaries = computed<Record<string, string>>(() => {
       ...acc,
       [entry.name]: 0,
     }),
-    {}
+    {},
   );
 
   Object.keys(values).forEach((key) => {
@@ -71,7 +71,7 @@ const summaries = computed<Record<string, string>>(() => {
       ...acc,
       [entry.name]: toHoursMinutesNotation(aggregates[entry.name]),
     }),
-    {}
+    {},
   );
 });
 
@@ -81,7 +81,7 @@ const total = computed<string>(() => {
       ...acc,
       [entry.name]: 0,
     }),
-    {}
+    {},
   );
 
   Object.keys(values).forEach((key) => {
@@ -96,14 +96,14 @@ const total = computed<string>(() => {
     props.inputCategories.reduce<number>(
       (acc, entry) =>
         acc + (tryParseTimeNotation(summaries.value[entry.name]) ?? 0),
-      0
-    )
+      0,
+    ),
   );
 });
 
 const splitKey = (key: string): [string, LoggableDay] => {
   const categoryPart = props.inputCategories.find((c) =>
-    key.startsWith(c.name)
+    key.startsWith(c.name),
   );
   if (categoryPart == null) {
     throw new Error(`Invalid key ${key}: unknown category`);
@@ -116,6 +116,80 @@ const splitKey = (key: string): [string, LoggableDay] => {
 
   return [categoryPart.name, dayPart];
 };
+
+const onKey = (direction: "up" | "down" | "left" | "right") => {
+  if (!(document.activeElement instanceof HTMLInputElement)) {
+    return;
+  }
+
+  const currentInputName = document.activeElement.name;
+  if (!currentInputName) {
+    return;
+  }
+
+  const nameParts = splitKey(currentInputName);
+  let projectIndex = -1;
+  let dayIndex = -1;
+  switch (direction) {
+    case "up":
+      projectIndex = props.inputCategories.findIndex(
+        (c) => c.name === nameParts[0],
+      );
+      if (projectIndex > 0) {
+        tryFocusOn(
+          createKey(props.inputCategories[projectIndex - 1].name, nameParts[1]),
+        );
+      } else {
+        tryFocusOn(
+          createKey(
+            props.inputCategories[props.inputCategories.length - 1].name,
+            nameParts[1],
+          ),
+        );
+      }
+      break;
+
+    case "down":
+      projectIndex = props.inputCategories.findIndex(
+        (c) => c.name === nameParts[0],
+      );
+      if (projectIndex === props.inputCategories.length - 1) {
+        tryFocusOn(createKey(props.inputCategories[0].name, nameParts[1]));
+      } else {
+        tryFocusOn(
+          createKey(props.inputCategories[projectIndex + 1].name, nameParts[1]),
+        );
+      }
+      break;
+
+    case "left":
+      dayIndex = loggableDays.findIndex((d) => d === nameParts[1]);
+      if (dayIndex > 0) {
+        tryFocusOn(createKey(nameParts[0], loggableDays[dayIndex - 1]));
+      } else {
+        tryFocusOn(
+          createKey(nameParts[0], loggableDays[loggableDays.length - 1]),
+        );
+      }
+      break;
+
+    case "right":
+      dayIndex = loggableDays.findIndex((d) => d === nameParts[1]);
+      if (dayIndex === loggableDays.length - 1) {
+        tryFocusOn(createKey(nameParts[0], loggableDays[0]));
+      } else {
+        tryFocusOn(createKey(nameParts[0], loggableDays[dayIndex + 1]));
+      }
+      break;
+  }
+};
+
+function tryFocusOn(name: string) {
+  const hits = document.getElementsByName(name);
+  if (hits.length > 0) {
+    hits[0].focus();
+  }
+}
 
 const onSubmit = () => {
   const entries = Object.entries(values);
@@ -165,6 +239,10 @@ const onSubmit = () => {
               v-model="values[createKey(category.name, day)]"
               :readonly="category.archived"
               :tabindex="category.archived ? -1 : 0"
+              @keyup.up="onKey('up')"
+              @keyup.down="onKey('down')"
+              @keyup.left="onKey('left')"
+              @keyup.right="onKey('right')"
             />
           </td>
           <td class="text-center text-gray-500">
@@ -183,7 +261,7 @@ const onSubmit = () => {
       </table>
     </div>
 
-    <div class="w-full flex justify-end mt-3">
+    <div class="mt-3 flex w-full justify-end">
       <KeepiButton @click="onSubmit" variant="green">Opslaan</KeepiButton>
     </div>
   </div>

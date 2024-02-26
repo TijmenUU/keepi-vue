@@ -23,7 +23,7 @@ const projects = (await nokoClient.getProjects())
   .filter(
     (p) =>
       p.enabled &&
-      p.participants.some((p) => p.id === applicationStore.nokoUser?.id)
+      p.participants.some((p) => p.id === applicationStore.nokoUser?.id),
   )
   .map((p) => ({ id: p.id, name: p.name }));
 const tags = (await nokoClient.getTags()).map((t) => t.formatted_name);
@@ -46,7 +46,7 @@ const values: CategoryEntry[] = reactive(
       nokoTags: c.nokoTags.slice(),
       name: c.name,
     }))
-    .sort((a, b) => parseInt(a.order) - parseInt(b.order))
+    .sort((a, b) => parseInt(a.order) - parseInt(b.order)),
 );
 
 const getProjectName = (id: number): string => {
@@ -134,14 +134,14 @@ const onSubmit = async () => {
     }
     if (
       values.some((v1) =>
-        values.some((v2) => v1.order == v2.order && v1.id !== v2.id)
+        values.some((v2) => v1.order == v2.order && v1.id !== v2.id),
       )
     ) {
       return;
     }
     if (
       values.some((v1) =>
-        values.some((v2) => v1.name == v2.name && v1.id !== v2.id)
+        values.some((v2) => v1.name == v2.name && v1.id !== v2.id),
       )
     ) {
       return;
@@ -166,7 +166,7 @@ const onSubmit = async () => {
 </script>
 
 <template>
-  <div class="lg:container mx-auto flex flex-col items-center py-3">
+  <div class="mx-auto flex flex-col items-center py-3 lg:container">
     <table class="text-center" :class="{ 'blur-sm': isSubmitting }">
       <tr>
         <th>Volgorde</th>
@@ -198,7 +198,7 @@ const onSubmit = async () => {
             <button
               @click="onDeleteValue(value.id)"
               :disabled="isSubmitting"
-              class="text-red-600 hover:text-red-400 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              class="text-red-600 transition-colors duration-200 hover:text-red-400 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -206,7 +206,7 @@ const onSubmit = async () => {
                 viewBox="0 0 24 24"
                 stroke-width="1.5"
                 stroke="currentColor"
-                class="w-6 h-6"
+                class="h-6 w-6"
               >
                 <path
                   stroke-linecap="round"
@@ -234,7 +234,7 @@ const onSubmit = async () => {
         <td class="align-top">
           <button
             @click="onResetAdd"
-            class="text-gray-400 hover:text-white transition-color duration-200"
+            class="transition-color text-gray-400 duration-200 hover:text-white"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -242,7 +242,7 @@ const onSubmit = async () => {
               viewBox="0 0 24 24"
               stroke-width="1.5"
               stroke="currentColor"
-              class="w-5 h-5"
+              class="h-5 w-5"
             >
               <path
                 stroke-linecap="round"
@@ -274,7 +274,7 @@ const onSubmit = async () => {
           <div class="flex flex-col space-y-2">
             <span
               v-if="toAdd.nokoTags.length > 0"
-              class="whitespace-nowrap overflow-ellipsis"
+              class="overflow-ellipsis whitespace-nowrap"
               >{{ toAdd.nokoTags.join(", ") }}</span
             >
             <span v-else class="text-gray-400">~</span>
@@ -291,10 +291,10 @@ const onSubmit = async () => {
                 :key="tag"
               >
                 <button
-                  class="text-gray-300 hover:text-white transition-color duration-200"
+                  class="transition-color text-gray-300 duration-200 hover:text-white"
                   @click="onAddTag(tag)"
                 >
-                  <span class="text-sm overflow-ellipsis">{{ tag }}</span>
+                  <span class="overflow-ellipsis text-sm">{{ tag }}</span>
                 </button>
               </div>
             </div>
@@ -312,7 +312,7 @@ const onSubmit = async () => {
       </tr>
     </table>
 
-    <div class="w-full flex justify-center mt-3">
+    <div class="mt-3 flex w-full justify-center">
       <KeepiButton
         @click="onSubmit"
         variant="green"

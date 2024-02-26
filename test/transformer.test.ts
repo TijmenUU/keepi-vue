@@ -11,7 +11,7 @@ describe("transformer", () => {
       const result = convertToTimeTableInput(
         getTestWeekdays(),
         getTestTagToCategoryMappings(),
-        getAverageWorkweekEntries()
+        getAverageWorkweekEntries(),
       );
 
       expect(result.length).toBe(28);
@@ -19,25 +19,25 @@ describe("transformer", () => {
       expectToHaveTimeTableEntriesForProjectWeekDays(
         "Development",
         result,
-        [480, 480, 420, 0, 480, 0, 0]
+        [480, 480, 420, 0, 480, 0, 0],
       );
 
       expectToHaveTimeTableEntriesForProjectWeekDays(
         "Presentation",
         result,
-        [0, 0, 60, 0, 0, 0, 0]
+        [0, 0, 60, 0, 0, 0, 0],
       );
 
       expectToHaveTimeTableEntriesForProjectWeekDays(
         "National holiday",
         result,
-        [0, 0, 0, 480, 0, 0, 0]
+        [0, 0, 0, 480, 0, 0, 0],
       );
 
       expectToHaveTimeTableEntriesForProjectWeekDays(
         "Vacation",
         result,
-        [0, 0, 0, 0, 0, 0, 0]
+        [0, 0, 0, 0, 0, 0, 0],
       );
     });
 
@@ -46,7 +46,7 @@ describe("transformer", () => {
         getTestWeekdays(),
         getTestTagToCategoryMappings(),
         // Only include monday until wednesday
-        getAverageWorkweekEntries().filter((e) => e.date < "2024-01-25")
+        getAverageWorkweekEntries().filter((e) => e.date < "2024-01-25"),
       );
 
       expect(result.length).toBe(28);
@@ -54,25 +54,25 @@ describe("transformer", () => {
       expectToHaveTimeTableEntriesForProjectWeekDays(
         "Development",
         result,
-        [480, 480, 420, 0, 0, 0, 0]
+        [480, 480, 420, 0, 0, 0, 0],
       );
 
       expectToHaveTimeTableEntriesForProjectWeekDays(
         "Presentation",
         result,
-        [0, 0, 60, 0, 0, 0, 0]
+        [0, 0, 60, 0, 0, 0, 0],
       );
 
       expectToHaveTimeTableEntriesForProjectWeekDays(
         "National holiday",
         result,
-        [0, 0, 0, 0, 0, 0, 0]
+        [0, 0, 0, 0, 0, 0, 0],
       );
 
       expectToHaveTimeTableEntriesForProjectWeekDays(
         "Vacation",
         result,
-        [0, 0, 0, 0, 0, 0, 0]
+        [0, 0, 0, 0, 0, 0, 0],
       );
     });
 
@@ -80,7 +80,7 @@ describe("transformer", () => {
       const result = convertToTimeTableInput(
         getTestWeekdays(),
         getTestTagToCategoryMappings(),
-        getVacationWeekEntries()
+        getVacationWeekEntries(),
       );
 
       expect(result.length).toBe(28);
@@ -88,25 +88,25 @@ describe("transformer", () => {
       expectToHaveTimeTableEntriesForProjectWeekDays(
         "Development",
         result,
-        [0, 0, 0, 0, 0, 0, 0]
+        [0, 0, 0, 0, 0, 0, 0],
       );
 
       expectToHaveTimeTableEntriesForProjectWeekDays(
         "Presentation",
         result,
-        [0, 0, 0, 0, 0, 0, 0]
+        [0, 0, 0, 0, 0, 0, 0],
       );
 
       expectToHaveTimeTableEntriesForProjectWeekDays(
         "National holiday",
         result,
-        [0, 0, 0, 0, 0, 0, 0]
+        [0, 0, 0, 0, 0, 0, 0],
       );
 
       expectToHaveTimeTableEntriesForProjectWeekDays(
         "Vacation",
         result,
-        [480, 480, 480, 480, 480, 0, 0]
+        [480, 480, 480, 480, 480, 0, 0],
       );
     });
 
@@ -174,7 +174,7 @@ describe("transformer", () => {
               },
             ],
           },
-        ]
+        ],
       );
 
       expect(result.length).toBe(28);
@@ -182,46 +182,46 @@ describe("transformer", () => {
       expectToHaveTimeTableEntriesForProjectWeekDays(
         "Development",
         result,
-        [0, 0, 0, 0, 0, 0, 0]
+        [0, 0, 0, 0, 0, 0, 0],
       );
 
       expectToHaveTimeTableEntriesForProjectWeekDays(
         "Presentation",
         result,
-        [0, 0, 0, 0, 0, 0, 0]
+        [0, 0, 0, 0, 0, 0, 0],
       );
 
       expectToHaveTimeTableEntriesForProjectWeekDays(
         "National holiday",
         result,
-        [0, 0, 0, 0, 0, 0, 0]
+        [0, 0, 0, 0, 0, 0, 0],
       );
 
       expectToHaveTimeTableEntriesForProjectWeekDays(
         "Vacation",
         result,
-        [0, 0, 0, 0, 0, 0, 0]
+        [0, 0, 0, 0, 0, 0, 0],
       );
     });
 
     function expectToHaveTimeTableEntriesForProjectWeekDays(
       category: string,
       timeTableEntries: TimeTableEntry[],
-      minutesPerWeekDay: number[]
+      minutesPerWeekDay: number[],
     ) {
       const categoryEntries = timeTableEntries.filter(
-        (r) => r.category === category
+        (r) => r.category === category,
       );
       expect(categoryEntries.length).toBe(7);
 
       if (minutesPerWeekDay.length != loggableDays.length) {
         throw Error(
-          `Unexpected length of minutes per workday. Expected ${loggableDays.length} (1 per workday) but received ${minutesPerWeekDay.length}`
+          `Unexpected length of minutes per workday. Expected ${loggableDays.length} (1 per workday) but received ${minutesPerWeekDay.length}`,
         );
       }
       if (categoryEntries.length != loggableDays.length) {
         throw Error(
-          `Unexpected number of entries for ${category}. Expected ${loggableDays.length} (1 per workday) but received ${categoryEntries.length}`
+          `Unexpected number of entries for ${category}. Expected ${loggableDays.length} (1 per workday) but received ${categoryEntries.length}`,
         );
       }
 
@@ -303,7 +303,7 @@ describe("transformer", () => {
         categoryMapping,
         // Only include monday until wednesday
         entries.filter((e) => e.date < "2024-01-25"),
-        input
+        input,
       );
 
       expect(result.creates.length).toBe(2);
@@ -332,14 +332,14 @@ describe("transformer", () => {
       const input = convertToTimeTableInput(
         weekDays,
         categoryMapping,
-        getVacationWeekEntries()
+        getVacationWeekEntries(),
       );
 
       const result = getNokoCallsForDelta(
         weekDays,
         categoryMapping,
         getAverageWorkweekEntries(),
-        input
+        input,
       );
 
       expect(result.idsToDelete.length).toBe(6);
@@ -392,7 +392,7 @@ describe("transformer", () => {
       const input = convertToTimeTableInput(
         weekDays,
         categoryMapping,
-        getAverageWorkweekEntries()
+        getAverageWorkweekEntries(),
       );
 
       const result = getNokoCallsForDelta(
@@ -405,7 +405,7 @@ describe("transformer", () => {
           }
           return e;
         }),
-        input
+        input,
       );
 
       expect(result.creates.length).toBe(0);
@@ -459,7 +459,7 @@ describe("transformer", () => {
         getTestWeekdays(),
         getTestTagToCategoryMappings(),
         [],
-        input
+        input,
       );
 
       expect(result.creates.length).toBe(0);

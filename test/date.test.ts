@@ -85,10 +85,10 @@ describe("format", () => {
     const twoHundredMillisecondsLater = new Date(now);
     twoHundredMillisecondsLater.setMilliseconds(200);
     expect(
-      getDifferenceInSeconds(now, twoHundredMillisecondsLater)
+      getDifferenceInSeconds(now, twoHundredMillisecondsLater),
     ).toBeCloseTo(0.2, 1);
     expect(
-      getDifferenceInSeconds(twoHundredMillisecondsLater, now)
+      getDifferenceInSeconds(twoHundredMillisecondsLater, now),
     ).toBeCloseTo(0.2, 1);
   });
 });

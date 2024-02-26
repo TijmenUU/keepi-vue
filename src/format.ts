@@ -52,7 +52,7 @@ export function tryParseTimeNotation(userValue: string): number | null {
   } else if (/^[0-9]+m$/.test(trimmedValue)) {
     // example: 30m
     const minutes = parseInt(
-      trimmedValue.substring(0, trimmedValue.length - 1)
+      trimmedValue.substring(0, trimmedValue.length - 1),
     );
     return minutes;
   } else if (/^[0-9]?[0-9]:[0-5][0-9]$/.test(trimmedValue)) {

@@ -45,19 +45,19 @@ export const useApplicationStore = defineStore("application", {
       await this.tryLoadApiKey();
 
       this.categories = tryParseStoredCategories(
-        localStorage.getItem(categoriesLocalStorageKey)
+        localStorage.getItem(categoriesLocalStorageKey),
       );
     },
     peristCategories(): void {
       localStorage.setItem(
         categoriesLocalStorageKey,
-        JSON.stringify(this.categories)
+        JSON.stringify(this.categories),
       );
     },
     getNokoClient(): NokoClient {
       if (this.apiKey === "") {
         throw new Error(
-          "Cannot create the Noko API client without a valid API token"
+          "Cannot create the Noko API client without a valid API token",
         );
       }
       if (

@@ -49,22 +49,22 @@ export default class NokoClient {
     // Inclusive
     from: Date,
     // Inclusive
-    to: Date
+    to: Date,
   ): Promise<INokoGetEntryResponse[]> {
     const options = this.getBaseRequestOptions();
     options.method = "GET";
 
     const response = await this.makeRequest(
       `/current_user/entries?from=${toShortIsoDate(from)}&to=${toShortIsoDate(
-        to
+        to,
       )}`,
-      options
+      options,
     );
     return await response.json();
   }
 
   public async createEntry(
-    body: INokoPostEntryRequest
+    body: INokoPostEntryRequest,
   ): Promise<INokoPostEntryResponse> {
     const options = this.getBaseRequestOptions("application/json");
     options.method = "POST";
@@ -76,7 +76,7 @@ export default class NokoClient {
 
   public async updateEntry(
     id: number,
-    body: INokoPutEntryRequest
+    body: INokoPutEntryRequest,
   ): Promise<void> {
     const options = this.getBaseRequestOptions("application/json");
     options.method = "PUT";
@@ -109,7 +109,7 @@ export default class NokoClient {
 
   private async makeRequest(
     subpath: string,
-    options?: RequestInit
+    options?: RequestInit,
   ): Promise<Response> {
     await this.RateLimitSelf();
 
@@ -127,7 +127,7 @@ export default class NokoClient {
     const now = new Date();
     const secondsSinceLastRequest = getDifferenceInSeconds(
       now,
-      this.lastRequestDateTime
+      this.lastRequestDateTime,
     );
     if (secondsSinceLastRequest < 0.5) {
       await new Promise((resolve) =>
@@ -135,8 +135,8 @@ export default class NokoClient {
           resolve,
           (this.minimumIntervalBetweenRequestsInSeconds -
             secondsSinceLastRequest) *
-            1000
-        )
+            1000,
+        ),
       );
     }
 

@@ -29,7 +29,7 @@ const categories = applicationStore.categories.map((m) => ({
 let initialValues: TimeTableEntry[] = convertToTimeTableInput(
   props.dateRange.dates,
   applicationStore.categories,
-  props.entries
+  props.entries,
 );
 
 const onSave = async (userInput: TimeTableEntry[]): Promise<void> => {
@@ -44,7 +44,7 @@ const onSave = async (userInput: TimeTableEntry[]): Promise<void> => {
       props.dateRange.dates,
       applicationStore.categories,
       props.entries,
-      userInput
+      userInput,
     );
     for (let i = 0; i < delta.creates.length; ++i) {
       console.debug("Creating Noko entry", delta.creates[i]);
@@ -79,7 +79,7 @@ const onSave = async (userInput: TimeTableEntry[]): Promise<void> => {
     :class="{ 'blur-sm': isSaving || props.disabled }"
   >
     <div
-      class="absolute top-0 left-0 w-full h-full z-10 cursor-not-allowed"
+      class="absolute left-0 top-0 z-10 h-full w-full cursor-not-allowed"
       v-if="isSaving || props.disabled"
     ></div>
 
