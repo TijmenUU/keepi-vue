@@ -117,6 +117,80 @@ const splitKey = (key: string): [string, LoggableDay] => {
   return [categoryPart.name, dayPart];
 };
 
+const onKey = (direction: "up" | "down" | "left" | "right") => {
+  if (!(document.activeElement instanceof HTMLInputElement)) {
+    return;
+  }
+
+  const currentInputName = document.activeElement.name;
+  if (!currentInputName) {
+    return;
+  }
+
+  const nameParts = splitKey(currentInputName);
+  let projectIndex = -1;
+  let dayIndex = -1;
+  switch (direction) {
+    case "up":
+      projectIndex = props.inputCategories.findIndex(
+        (c) => c.name === nameParts[0],
+      );
+      if (projectIndex > 0) {
+        tryFocusOn(
+          createKey(props.inputCategories[projectIndex - 1].name, nameParts[1]),
+        );
+      } else {
+        tryFocusOn(
+          createKey(
+            props.inputCategories[props.inputCategories.length - 1].name,
+            nameParts[1],
+          ),
+        );
+      }
+      break;
+
+    case "down":
+      projectIndex = props.inputCategories.findIndex(
+        (c) => c.name === nameParts[0],
+      );
+      if (projectIndex === props.inputCategories.length - 1) {
+        tryFocusOn(createKey(props.inputCategories[0].name, nameParts[1]));
+      } else {
+        tryFocusOn(
+          createKey(props.inputCategories[projectIndex + 1].name, nameParts[1]),
+        );
+      }
+      break;
+
+    case "left":
+      dayIndex = loggableDays.findIndex((d) => d === nameParts[1]);
+      if (dayIndex > 0) {
+        tryFocusOn(createKey(nameParts[0], loggableDays[dayIndex - 1]));
+      } else {
+        tryFocusOn(
+          createKey(nameParts[0], loggableDays[loggableDays.length - 1]),
+        );
+      }
+      break;
+
+    case "right":
+      dayIndex = loggableDays.findIndex((d) => d === nameParts[1]);
+      if (dayIndex === loggableDays.length - 1) {
+        tryFocusOn(createKey(nameParts[0], loggableDays[0]));
+      } else {
+        tryFocusOn(createKey(nameParts[0], loggableDays[dayIndex + 1]));
+      }
+      break;
+  }
+};
+
+function tryFocusOn(name: string) {
+  const hits = document.getElementsByName(name);
+  if (hits.length > 0) {
+    hits[0].focus();
+  }
+}
+
 const onSubmit = () => {
   const entries = Object.entries(values);
 
@@ -165,6 +239,10 @@ const onSubmit = () => {
               v-model="values[createKey(category.name, day)]"
               :readonly="category.archived"
               :tabindex="category.archived ? -1 : 0"
+              @keyup.up="onKey('up')"
+              @keyup.down="onKey('down')"
+              @keyup.left="onKey('left')"
+              @keyup.right="onKey('right')"
             />
           </td>
           <td class="text-center text-gray-500">

@@ -19,6 +19,7 @@ const props = withDefaults(
 
 const emits = defineEmits<{
   (e: "update:modelValue", value: string): void;
+  (e: "keyup", value: KeyboardEvent): void;
 }>();
 </script>
 
@@ -35,6 +36,7 @@ const emits = defineEmits<{
         ($event.target as HTMLInputElement)?.value ?? '',
       )
     "
+    @keyup="emits('keyup', $event)"
     :readonly="props.readonly"
     :tabindex="props.tabIndex"
   />
