@@ -32,6 +32,9 @@ export const useApplicationStore = defineStore("application", {
     requiresCategories: (state) => {
       return state.categories.length === 0;
     },
+    isConfigured(): boolean {
+      return !this.requiresSetup && !this.requiresCategories;
+    },
   },
 
   actions: {

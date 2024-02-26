@@ -1,10 +1,12 @@
 <script setup lang="ts">
+import NavigationMenu from "@/components/NavigationMenu.vue";
 import { router } from "@/router";
 import { useApplicationStore } from "@/store/application-store";
 import { onMounted } from "vue";
 
+const store = useApplicationStore();
+
 onMounted(async () => {
-  const store = useApplicationStore();
   await store.hydrate();
 
   if (store.requiresSetup) {
@@ -16,6 +18,10 @@ onMounted(async () => {
 </script>
 
 <template>
+  <Transition name="fade" mode="out-in" appear>
+    <NavigationMenu v-if="store.isConfigured" />
+  </Transition>
+
   <RouterView v-slot="{ Component }">
     <Transition name="fade" mode="out-in" appear>
       <Suspense>
