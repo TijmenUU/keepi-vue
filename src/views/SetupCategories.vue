@@ -23,7 +23,7 @@ const projects = (await nokoClient.getProjects())
   .filter(
     (p) =>
       p.enabled &&
-      p.participants.some((p) => p.id === applicationStore.nokoUser?.id),
+      (p.participants?.some((p) => p.id === applicationStore.nokoUser?.id) ?? true),
   )
   .map((p) => ({ id: p.id, name: p.name }));
 const tags = (await nokoClient.getTags()).map((t) => t.formatted_name);

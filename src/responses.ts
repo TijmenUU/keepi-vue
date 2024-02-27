@@ -249,5 +249,5 @@ export interface INokoGetProjectResponse {
   id: number;
   name: string;
   enabled: boolean;
-  participants: { id: number }[];
+  participants: { id: number }[] | null;
 }
