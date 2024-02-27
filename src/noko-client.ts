@@ -1,7 +1,6 @@
 import { getDifferenceInSeconds } from "@/date";
 import { toShortIsoDate } from "@/format";
 import {
-  INokoGetCurrentUserResponse,
   INokoPostEntryRequest,
   INokoPutEntryRequest,
 } from "@/requests";
@@ -10,6 +9,7 @@ import {
   INokoGetProjectResponse,
   INokoGetTagResponse,
   INokoPostEntryResponse,
+  INokoGetCurrentUserResponse,
 } from "@/responses";
 
 export default class NokoClient {
