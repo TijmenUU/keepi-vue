@@ -2,7 +2,7 @@
   "recommendations": [
     "Vue.volar",
     "esbenp.prettier-vscode",
-    "zixuanchen.vitest-explorer",
-    "bradlc.vscode-tailwindcss"
+    "bradlc.vscode-tailwindcss",
+    "vitest.explorer"
   ]
 }
