@@ -23,7 +23,7 @@ const projects = (await nokoClient.getProjects())
   .filter(
     (p) =>
       p.enabled &&
-      p.participants.some((p) => p.id === applicationStore.nokoUser?.id),
+      (p.participants?.some((p) => p.id === applicationStore.nokoUser?.id) ?? true),
   )
   .map((p) => ({ id: p.id, name: p.name }));
 const tags = (await nokoClient.getTags()).map((t) => t.formatted_name);
@@ -260,8 +260,8 @@ const onSubmit = async () => {
             class="rounded border border-gray-600 bg-transparent px-1"
             v-model="toAdd.projectId"
           >
-            <option default disabled value="">Maak een keuze</option>
-            <option
+            <option class="text-black bg-gray-300" default disabled value="">Maak een keuze</option>
+            <option class="text-black bg-gray-300"
               v-for="project in projects"
               :key="project.id"
               :value="project.id.toString()"
