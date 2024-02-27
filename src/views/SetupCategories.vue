@@ -260,8 +260,8 @@ const onSubmit = async () => {
             class="rounded border border-gray-600 bg-transparent px-1"
             v-model="toAdd.projectId"
           >
-            <option default disabled value="">Maak een keuze</option>
-            <option
+            <option class="text-black bg-gray-300" default disabled value="">Maak een keuze</option>
+            <option class="text-black bg-gray-300"
               v-for="project in projects"
               :key="project.id"
               :value="project.id.toString()"
