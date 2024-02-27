@@ -5,12 +5,15 @@ const props = defineProps<{
 </script>
 
 <template>
-  <router-link custom :to="props.route" v-slot="{ isActive, href, navigate }">
+  <router-link custom :to="props.route" v-slot="{ isExactActive, href, navigate }">
     <a
       :href="href"
       @click="navigate"
-      class="block bg-transparent p-0 text-white"
-      :class="{ 'text-blue-500': isActive }"
+      class="block bg-transparent p-0"
+      :class="{
+        'text-white': !isExactActive,
+        'text-blue-500': isExactActive,
+      }"
     >
       <slot></slot>
     </a>
