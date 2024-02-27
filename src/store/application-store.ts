@@ -74,7 +74,10 @@ export const useApplicationStore = defineStore("application", {
     async tryLoadApiKey(): Promise<boolean> {
       try {
         const user = await this.getNokoClient().getCurrentUser();
-        if (user.state === "active") {
+        if (user.role !== 'supervisor' && user.role !== 'leader' && user.role !== 'coworker') {
+          console.error(`User role (${user.role}) cannot view project participants which is required for this application`);
+          return false;
+        } else if (user.state === "active") {
           this.nokoUser = {
             id: user.id,
             name: `${user.first_name} ${user.last_name}`,
