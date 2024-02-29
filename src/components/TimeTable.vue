@@ -49,7 +49,7 @@ const generateValues = (): Record<string, string> => {
 
 const values: Record<string, string> = reactive(generateValues());
 
-const summaries = computed<Record<string, string>>(() => {
+const projectSummaries = computed<Record<string, string>>(() => {
   const aggregates = props.inputCategories.reduce<Record<string, number>>(
     (acc, entry) => ({
       ...acc,
@@ -75,7 +75,7 @@ const summaries = computed<Record<string, string>>(() => {
   );
 });
 
-const total = computed<string>(() => {
+const projectTotal = computed<string>(() => {
   const aggregates = props.inputCategories.reduce<Record<string, number>>(
     (acc, entry) => ({
       ...acc,
@@ -95,7 +95,7 @@ const total = computed<string>(() => {
   return toHoursMinutesNotation(
     props.inputCategories.reduce<number>(
       (acc, entry) =>
-        acc + (tryParseTimeNotation(summaries.value[entry.name]) ?? 0),
+        acc + (tryParseTimeNotation(projectSummaries.value[entry.name]) ?? 0),
       0,
     ),
   );
@@ -228,7 +228,7 @@ const onSubmit = () => {
         <tr
           v-for="category in inputCategories"
           :key="category.name"
-          v-show="summaries[category.name] != '' || !category.archived"
+          v-show="projectSummaries[category.name] != '' || !category.archived"
         >
           <td>
             <span class="pr-1">{{ category.name }}</span>
@@ -246,7 +246,7 @@ const onSubmit = () => {
             />
           </td>
           <td class="text-center text-gray-500">
-            <span class="pl-1">{{ summaries[category.name] }}</span>
+            <span class="pl-1">{{ projectSummaries[category.name] }}</span>
           </td>
         </tr>
 
@@ -255,7 +255,7 @@ const onSubmit = () => {
           <td :colspan="loggableDays.length - 1"></td>
           <td class="text-center text-gray-500">Totaal</td>
           <td class="text-center text-gray-500">
-            {{ total }}
+            {{ projectTotal }}
           </td>
         </tr>
       </table>
