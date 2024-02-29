@@ -49,6 +49,32 @@ const generateValues = (): Record<string, string> => {
 
 const values: Record<string, string> = reactive(generateValues());
 
+const daySummaries = computed<Record<string, string>>(() => {
+  const aggregates = loggableDays.reduce<Record<string, number>>(
+    (acc, day) => ({
+      ...acc,
+      [day]: 0,
+    }),
+    {},
+  );
+
+  Object.keys(values).forEach((key) => {
+    const value = tryParseTimeNotation(values[key]);
+    if (value != null) {
+      const parts = splitKey(key);
+      aggregates[parts[1]] += value;
+    }
+  });
+
+  return loggableDays.reduce<Record<string, string>>(
+    (acc, day) => ({
+      ...acc,
+      [day]: toHoursMinutesNotation(aggregates[day]),
+    }),
+    {},
+  );
+});
+
 const projectSummaries = computed<Record<string, string>>(() => {
   const aggregates = props.inputCategories.reduce<Record<string, number>>(
     (acc, entry) => ({
@@ -252,8 +278,9 @@ const onSubmit = () => {
 
         <tr>
           <td></td>
-          <td :colspan="loggableDays.length - 1"></td>
-          <td class="text-center text-gray-500">Totaal</td>
+          <td v-for="day in loggableDays" class="text-center text-gray-500">
+            {{ daySummaries[day] }}
+          </td>
           <td class="text-center text-gray-500">
             {{ projectTotal }}
           </td>
