@@ -242,54 +242,59 @@ const onSubmit = () => {
 <template>
   <div>
     <div>
-      <table>
-        <tr>
-          <th></th>
-          <th v-for="day in loggableDays" :key="day">
-            {{ day.substring(0, 2) }}
-          </th>
-          <th></th>
-        </tr>
+      <div class="flex justify-center overflow-auto" style="max-width: 100vw">
+        <table class="table-auto">
+          <tr>
+            <th></th>
+            <th v-for="day in loggableDays" :key="day">
+              {{ day.substring(0, 2) }}
+            </th>
+            <th></th>
+          </tr>
 
-        <tr
-          v-for="category in inputCategories"
-          :key="category.name"
-          v-show="projectSummaries[category.name] != '' || !category.archived"
-        >
-          <td>
-            <span class="pr-1">{{ category.name }}</span>
-          </td>
-          <td v-for="day in loggableDays" :key="createKey(category.name, day)">
-            <KeepiInput
-              :name="createKey(category.name, day)"
-              v-model="values[createKey(category.name, day)]"
-              :readonly="category.archived"
-              :tabindex="category.archived ? -1 : 0"
-              @keyup.up="onKey('up')"
-              @keyup.down="onKey('down')"
-              @keyup.left="onKey('left')"
-              @keyup.right="onKey('right')"
-            />
-          </td>
-          <td class="text-center text-gray-500">
-            <span class="pl-1">{{ projectSummaries[category.name] }}</span>
-          </td>
-        </tr>
+          <tr
+            v-for="category in inputCategories"
+            :key="category.name"
+            v-show="projectSummaries[category.name] != '' || !category.archived"
+          >
+            <td>
+              <span class="pr-1">{{ category.name }}</span>
+            </td>
+            <td
+              v-for="day in loggableDays"
+              :key="createKey(category.name, day)"
+            >
+              <KeepiInput
+                :name="createKey(category.name, day)"
+                v-model="values[createKey(category.name, day)]"
+                :readonly="category.archived"
+                :tabindex="category.archived ? -1 : 0"
+                @keyup.up="onKey('up')"
+                @keyup.down="onKey('down')"
+                @keyup.left="onKey('left')"
+                @keyup.right="onKey('right')"
+              />
+            </td>
+            <td class="text-center text-gray-500">
+              <span class="pl-1">{{ projectSummaries[category.name] }}</span>
+            </td>
+          </tr>
 
-        <tr>
-          <td></td>
-          <td v-for="day in loggableDays" class="text-center text-gray-500">
-            {{ daySummaries[day] }}
-          </td>
-          <td class="text-center text-gray-500">
-            {{ projectTotal }}
-          </td>
-        </tr>
-      </table>
-    </div>
+          <tr>
+            <td></td>
+            <td v-for="day in loggableDays" class="text-center text-gray-500">
+              {{ daySummaries[day] }}
+            </td>
+            <td class="text-center text-gray-500">
+              {{ projectTotal }}
+            </td>
+          </tr>
+        </table>
+      </div>
 
-    <div class="mt-3 flex w-full justify-end">
-      <KeepiButton @click="onSubmit" variant="green">Opslaan</KeepiButton>
+      <div class="flex w-full justify-end p-3">
+        <KeepiButton @click="onSubmit" variant="green">Opslaan</KeepiButton>
+      </div>
     </div>
   </div>
 </template>
