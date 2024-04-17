@@ -14,6 +14,7 @@ interface IState {
     name: string;
   } | null;
   categories: TagToCategoryMapping[];
+  copiedTimeTableValues: Record<string, string> | null;
 }
 
 export const useApplicationStore = defineStore("application", {
@@ -22,6 +23,7 @@ export const useApplicationStore = defineStore("application", {
       apiKey: "",
       nokoUser: null,
       categories: [],
+      copiedTimeTableValues: null,
     };
   },
 
@@ -74,8 +76,14 @@ export const useApplicationStore = defineStore("application", {
     async tryLoadApiKey(): Promise<boolean> {
       try {
         const user = await this.getNokoClient().getCurrentUser();
-        if (user.role !== 'supervisor' && user.role !== 'leader' && user.role !== 'coworker') {
-          console.error(`User role (${user.role}) cannot view project participants which is required for this application`);
+        if (
+          user.role !== "supervisor" &&
+          user.role !== "leader" &&
+          user.role !== "coworker"
+        ) {
+          console.error(
+            `User role (${user.role}) cannot view project participants which is required for this application`,
+          );
           return false;
         } else if (user.state === "active") {
           this.nokoUser = {
