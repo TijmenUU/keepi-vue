@@ -4,7 +4,7 @@ import KeepiInput from "@/components/KeepiInput.vue";
 import { toHoursMinutesNotation, tryParseTimeNotation } from "@/format";
 import { useApplicationStore } from "@/store/application-store";
 import { LoggableDay, loggableDays } from "@/types";
-import { computed, reactive } from "vue";
+import { computed, reactive, ref } from "vue";
 
 export type TimeTableEntry = {
   category: string;
@@ -51,6 +51,7 @@ const generateValues = (): Record<string, string> => {
 };
 
 const values: Record<string, string> = reactive(generateValues());
+const validationMode = ref<"optional-time" | undefined>(undefined);
 
 const daySummaries = computed<Record<string, string>>(() => {
   const aggregates = loggableDays.reduce<Record<string, number>>(
@@ -244,6 +245,7 @@ const onSubmit = () => {
     const [category, day] = splitKey(key);
     const minutes = !!value ? tryParseTimeNotation(value) : 0;
     if (minutes == null) {
+      validationMode.value = "optional-time";
       throw new Error(`${value} cannot be parsed as 00u00m`);
     }
 
@@ -288,6 +290,7 @@ const onSubmit = () => {
                 v-model="values[createKey(category.name, day)]"
                 :readonly="category.archived"
                 :tabindex="category.archived ? -1 : 0"
+                :input-validation="validationMode"
                 style="width: 65px"
                 @keyup.up="onKey('up')"
                 @keyup.down="onKey('down')"
@@ -309,14 +312,14 @@ const onSubmit = () => {
             <td v-for="day in loggableDays" class="text-center text-gray-500">
               <div class="min-h-6">
                 <span>
-              {{ daySummaries[day] }}
+                  {{ daySummaries[day] }}
                 </span>
               </div>
             </td>
             <td class="text-center text-gray-500">
               <div class="min-h-6" style="min-width: 65px">
                 <span>
-              {{ projectTotal }}
+                  {{ projectTotal }}
                 </span>
               </div>
             </td>
