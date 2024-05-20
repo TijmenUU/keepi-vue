@@ -4,7 +4,7 @@ import KeepiInput from "@/components/KeepiInput.vue";
 import { toHoursMinutesNotation, tryParseTimeNotation } from "@/format";
 import { useApplicationStore } from "@/store/application-store";
 import { LoggableDay, loggableDays } from "@/types";
-import { computed, reactive } from "vue";
+import { computed, reactive, ref } from "vue";
 
 export type TimeTableEntry = {
   category: string;
@@ -51,6 +51,7 @@ const generateValues = (): Record<string, string> => {
 };
 
 const values: Record<string, string> = reactive(generateValues());
+const validationMode = ref<"optional-time" | undefined>(undefined);
 
 const daySummaries = computed<Record<string, string>>(() => {
   const aggregates = loggableDays.reduce<Record<string, number>>(
@@ -244,6 +245,7 @@ const onSubmit = () => {
     const [category, day] = splitKey(key);
     const minutes = !!value ? tryParseTimeNotation(value) : 0;
     if (minutes == null) {
+      validationMode.value = "optional-time";
       throw new Error(`${value} cannot be parsed as 00u00m`);
     }
 
@@ -261,7 +263,7 @@ const onSubmit = () => {
 <template>
   <div>
     <div>
-      <div class="flex justify-center overflow-auto" style="max-width: 100vw">
+      <div class="flex justify-center" style="max-width: 100vw">
         <table class="table-auto">
           <tr>
             <th></th>
@@ -288,6 +290,8 @@ const onSubmit = () => {
                 v-model="values[createKey(category.name, day)]"
                 :readonly="category.archived"
                 :tabindex="category.archived ? -1 : 0"
+                :input-validation="validationMode"
+                style="width: 65px"
                 @keyup.up="onKey('up')"
                 @keyup.down="onKey('down')"
                 @keyup.left="onKey('left')"
@@ -295,17 +299,29 @@ const onSubmit = () => {
               />
             </td>
             <td class="text-center text-gray-500">
-              <span class="pl-1">{{ projectSummaries[category.name] }}</span>
+              <div style="min-width: 65px">
+                <span class="pl-1">
+                  {{ projectSummaries[category.name] }}
+                </span>
+              </div>
             </td>
           </tr>
 
           <tr>
             <td></td>
             <td v-for="day in loggableDays" class="text-center text-gray-500">
-              {{ daySummaries[day] }}
+              <div class="min-h-6">
+                <span>
+                  {{ daySummaries[day] }}
+                </span>
+              </div>
             </td>
             <td class="text-center text-gray-500">
-              {{ projectTotal }}
+              <div class="min-h-6" style="min-width: 65px">
+                <span>
+                  {{ projectTotal }}
+                </span>
+              </div>
             </td>
           </tr>
         </table>
@@ -375,9 +391,3 @@ const onSubmit = () => {
     </div>
   </div>
 </template>
-
-<style scoped>
-input {
-  width: 60px;
-}
-</style>

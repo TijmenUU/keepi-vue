@@ -32,6 +32,27 @@ export function toHoursMinutesNotation(minutes: number): string {
 }
 
 export function tryParseTimeNotation(userValue: string): number | null {
+  let result = tryParseSuffixTimeNotation(userValue);
+  if (result != null) {
+    return result;
+  }
+
+  result = tryParseColonTimeNotation(userValue);
+  if (result != null) {
+    return result;
+  }
+
+  const trimmedValue = userValue.trim();
+  if (/^[0-9]+?$/.test(trimmedValue)) {
+    // example: 1
+    const hours = parseInt(trimmedValue);
+    return hours * 60;
+  }
+
+  return null;
+}
+
+export function tryParseSuffixTimeNotation(userValue: string): number | null {
   const trimmedValue = userValue.trim();
   if (/^[0-9]+(h|u)(\s)*[0-9]+m$/.test(trimmedValue)) {
     // example: 1h30m
@@ -41,10 +62,6 @@ export function tryParseTimeNotation(userValue: string): number | null {
     const minutes = parseInt(minutesPart.substring(0, minutesPart.length - 1));
 
     return minutes + hours * 60;
-  } else if (/^[0-9]+?$/.test(trimmedValue)) {
-    // example: 1
-    const hours = parseInt(trimmedValue);
-    return hours * 60;
   } else if (/^[0-9]+(h|u)$/.test(trimmedValue)) {
     // example: 1h
     const hours = parseInt(trimmedValue.substring(0, trimmedValue.length - 1));
@@ -55,7 +72,14 @@ export function tryParseTimeNotation(userValue: string): number | null {
       trimmedValue.substring(0, trimmedValue.length - 1),
     );
     return minutes;
-  } else if (/^[0-9]?[0-9]:[0-5][0-9]$/.test(trimmedValue)) {
+  }
+
+  return null;
+}
+
+export function tryParseColonTimeNotation(userValue: string): number | null {
+  const trimmedValue = userValue.trim();
+  if (/^[0-9]?[0-9]:[0-5][0-9]$/.test(trimmedValue)) {
     // example: 9:35 or 0:30
     const values = trimmedValue.split(":");
     const hours = parseInt(values[0]);
@@ -63,5 +87,6 @@ export function tryParseTimeNotation(userValue: string): number | null {
 
     return minutes + hours * 60;
   }
+
   return null;
 }

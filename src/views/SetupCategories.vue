@@ -168,7 +168,7 @@ const onSubmit = async () => {
 <template>
   <div class="mx-auto flex flex-col items-center py-3 lg:container">
     <div>
-      <div class="overflow-auto" style="max-width: 100vw">
+      <div>
         <table
           class="mt-3 table-auto text-center"
           :class="{ 'blur-sm': isSubmitting }"

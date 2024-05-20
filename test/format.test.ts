@@ -3,6 +3,8 @@ import {
   toHoursMinutesNotation,
   toShortDutchDate,
   toShortIsoDate,
+  tryParseColonTimeNotation,
+  tryParseSuffixTimeNotation,
   tryParseTimeNotation,
 } from "@/format";
 
@@ -44,5 +46,45 @@ describe("format", () => {
     expect(tryParseTimeNotation("0:59")).toBe(59);
     expect(tryParseTimeNotation("1:30")).toBe(90);
     expect(tryParseTimeNotation("10:30")).toBe(630);
+  });
+
+  test("tryParseSuffixTimeNotation", () => {
+    expect(tryParseSuffixTimeNotation("")).toBe(null);
+    expect(tryParseSuffixTimeNotation("abc1h")).toBe(null);
+    expect(tryParseSuffixTimeNotation("1habc")).toBe(null);
+    expect(tryParseSuffixTimeNotation("abc0:00")).toBe(null);
+    expect(tryParseSuffixTimeNotation("0:00abc")).toBe(null);
+    expect(tryParseSuffixTimeNotation("1:5")).toBe(null);
+    expect(tryParseSuffixTimeNotation("1:87")).toBe(null);
+    expect(tryParseSuffixTimeNotation("1")).toBe(null);
+    expect(tryParseSuffixTimeNotation("10")).toBe(null);
+    expect(tryParseSuffixTimeNotation("0:59")).toBe(null);
+    expect(tryParseSuffixTimeNotation("1:30")).toBe(null);
+    expect(tryParseSuffixTimeNotation("10:30")).toBe(null);
+
+    expect(tryParseSuffixTimeNotation("59m")).toBe(59);
+    expect(tryParseSuffixTimeNotation("1h")).toBe(60);
+    expect(tryParseSuffixTimeNotation("1h59m")).toBe(119);
+    expect(tryParseSuffixTimeNotation("10h30m")).toBe(630);
+  });
+
+  test("tryParseColonTimeNotation", () => {
+    expect(tryParseColonTimeNotation("")).toBe(null);
+    expect(tryParseColonTimeNotation("abc1h")).toBe(null);
+    expect(tryParseColonTimeNotation("1habc")).toBe(null);
+    expect(tryParseColonTimeNotation("abc0:00")).toBe(null);
+    expect(tryParseColonTimeNotation("0:00abc")).toBe(null);
+    expect(tryParseColonTimeNotation("1:5")).toBe(null);
+    expect(tryParseColonTimeNotation("1:87")).toBe(null);
+    expect(tryParseColonTimeNotation("59m")).toBe(null);
+    expect(tryParseColonTimeNotation("1")).toBe(null);
+    expect(tryParseColonTimeNotation("10")).toBe(null);
+    expect(tryParseColonTimeNotation("1h")).toBe(null);
+    expect(tryParseColonTimeNotation("1h59m")).toBe(null);
+    expect(tryParseColonTimeNotation("10h30m")).toBe(null);
+
+    expect(tryParseColonTimeNotation("0:59")).toBe(59);
+    expect(tryParseColonTimeNotation("1:30")).toBe(90);
+    expect(tryParseColonTimeNotation("10:30")).toBe(630);
   });
 });
