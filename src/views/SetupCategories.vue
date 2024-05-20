@@ -72,6 +72,14 @@ const filteredTags = computed<string[]>(() => {
   return hits;
 });
 
+const hasNonEmptyEditor = computed<boolean>(() => {
+  return toAdd.name != "" || toAdd.projectId != "" || toAdd.nokoTags.length > 0;
+});
+
+const isEditorValid = computed<boolean>(() => {
+  return toAdd.name != "" && toAdd.projectId != "" && toAdd.nokoTags.length > 0;
+});
+
 const onAddTag = (tag: string) => {
   if (tag != null && tag.length > 0 && !toAdd.nokoTags.some((t) => t === tag)) {
     toAdd.nokoTags.push(tag);
@@ -319,7 +327,9 @@ const onSubmit = async () => {
               <!-- Adding archived tags is not in scope for now -->
             </td>
             <td class="align-top">
-              <KeepiButton @click="onAddCategory()" :disabled="isSubmitting"
+              <KeepiButton
+                @click="onAddCategory()"
+                :disabled="isSubmitting || !isEditorValid"
                 >Toevoegen</KeepiButton
               >
             </td>
@@ -331,9 +341,13 @@ const onSubmit = async () => {
         <KeepiButton
           @click="onSubmit"
           variant="green"
-          :disabled="isSubmitting || values.length < 1"
-          >Opslaan</KeepiButton
+          :disabled="isSubmitting || values.length < 1 || hasNonEmptyEditor"
+          :title="
+            hasNonEmptyEditor ? 'Er zijn nog onopgeslagen wijzigingen' : ''
+          "
         >
+          Opslaan
+        </KeepiButton>
       </div>
     </div>
   </div>
