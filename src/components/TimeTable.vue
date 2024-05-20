@@ -261,7 +261,7 @@ const onSubmit = () => {
 <template>
   <div>
     <div>
-      <div class="flex justify-center overflow-auto" style="max-width: 100vw">
+      <div class="flex justify-center" style="max-width: 100vw">
         <table class="table-auto">
           <tr>
             <th></th>
