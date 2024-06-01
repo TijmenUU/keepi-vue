@@ -5,7 +5,11 @@ const props = defineProps<{
 </script>
 
 <template>
-  <router-link custom :to="props.route" v-slot="{ isExactActive, href, navigate }">
+  <router-link
+    custom
+    :to="props.route"
+    v-slot="{ isExactActive, href, navigate }"
+  >
     <a
       :href="href"
       @click="navigate"

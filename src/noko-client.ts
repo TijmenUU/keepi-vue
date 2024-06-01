@@ -1,9 +1,6 @@
 import { getDifferenceInSeconds } from "@/date";
 import { toShortIsoDate } from "@/format";
-import {
-  INokoPostEntryRequest,
-  INokoPutEntryRequest,
-} from "@/requests";
+import { INokoPostEntryRequest, INokoPutEntryRequest } from "@/requests";
 import {
   INokoGetEntryResponse,
   INokoGetProjectResponse,
@@ -107,8 +104,11 @@ export default class NokoClient {
 
     let currentPage = 1;
     const pageSize = 10;
-    while(true) {
-      const response = await this.makeRequest(`/projects/?enabled=true&per_page=${pageSize}&page=${currentPage}`, options);
+    while (true) {
+      const response = await this.makeRequest(
+        `/projects/?enabled=true&per_page=${pageSize}&page=${currentPage}`,
+        options,
+      );
       const responseProjects: INokoGetProjectResponse[] = await response.json();
       results.push(...responseProjects);
 
