@@ -16,3 +16,9 @@ export type TagToCategoryMapping = {
   nokoTags: string[];
   name: string;
 };
+
+export type TimeTableEntry = {
+  category: string;
+  day: LoggableDay;
+  minutes: number;
+};

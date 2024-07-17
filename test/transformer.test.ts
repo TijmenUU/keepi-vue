@@ -1,8 +1,7 @@
-import { TimeTableEntry } from "@/components/TimeTable.vue";
 import { toShortIsoDate } from "@/format";
 import { INokoGetEntryResponse } from "@/responses";
 import { convertToTimeTableInput, getNokoCallsForDelta } from "@/transformer";
-import { TagToCategoryMapping, loggableDays } from "@/types";
+import { TagToCategoryMapping, TimeTableEntry, loggableDays } from "@/types";
 import { describe, expect, test } from "vitest";
 
 describe("transformer", () => {
