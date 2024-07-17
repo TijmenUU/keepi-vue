@@ -6,14 +6,8 @@ import { toHoursMinutesNotation, tryParseTimeNotation } from "@/format";
 import { INokoGetEntryResponse } from "@/responses";
 import { useApplicationStore } from "@/store/application-store";
 import { convertToTimeTableInput, getNokoCallsForDelta } from "@/transformer";
-import { LoggableDay, loggableDays } from "@/types";
+import { LoggableDay, loggableDays, TimeTableEntry } from "@/types";
 import { ref, computed, reactive } from "vue";
-
-type TimeTableEntry = {
-  category: string;
-  day: LoggableDay;
-  minutes: number;
-};
 
 const isSaving = ref(false);
 

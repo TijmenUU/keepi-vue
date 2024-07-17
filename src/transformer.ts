@@ -1,8 +1,7 @@
-import { TimeTableEntry } from "@/components/TimeTable.vue";
 import { toShortIsoDate } from "@/format";
 import { INokoPostEntryRequest, INokoPutEntryRequest } from "@/requests";
 import { INokoGetEntryResponse } from "@/responses";
-import { TagToCategoryMapping, loggableDays } from "@/types";
+import { TagToCategoryMapping, TimeTableEntry, loggableDays } from "@/types";
 
 type DayAndTagMapping = {
   date: string;
