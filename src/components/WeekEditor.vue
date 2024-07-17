@@ -147,6 +147,20 @@ const projectTotal = computed<string>(() => {
   );
 });
 
+const today = computed<LoggableDay | null>(() => {
+  const today = new Date();
+  const dateIndex = props.dateRange.dates.findIndex(
+    (d) =>
+      d.getUTCFullYear() === today.getUTCFullYear() &&
+      d.getUTCMonth() === today.getUTCMonth() &&
+      d.getUTCDate() === today.getUTCDate(),
+  );
+  if (dateIndex < 0) {
+    return null;
+  }
+  return loggableDays[dateIndex];
+});
+
 const splitKey = (key: string): [string, LoggableDay] => {
   const categoryPart = applicationStore.categories.find((c) =>
     key.startsWith(c.name),
@@ -342,7 +356,13 @@ const onSave = async (userInput: TimeTableEntry[]): Promise<void> => {
             <tr>
               <th></th>
               <th v-for="day in loggableDays" :key="day">
-                {{ day.substring(0, 2) }}
+                <span>{{ day.substring(0, 2) }}</span>
+                <span
+                  class="text-blue-500"
+                  :class="{ invisible: day !== today }"
+                  :title="`Het is vandaag ${day}`"
+                  >*</span
+                >
               </th>
               <th></th>
             </tr>
