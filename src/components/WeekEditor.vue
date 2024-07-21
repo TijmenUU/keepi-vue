@@ -49,11 +49,14 @@ const onDayInput = (value: string, index: number) => {
 const daySummaries = computed<string[]>(() => {
   const minutesPerDay: number[] = [];
   for (let i = 0; i < loggableDays.length; ++i) {
-    const matches = timeTableEntries.value.filter(
+    const inputeMatches = timeTableEntries.value.filter(
+      (v) => v.dayName === loggableDays[i],
+    );
+    const unmappedMatches = mappedEntries.unmappedEntries.filter(
       (v) => v.dayName === loggableDays[i],
     );
     minutesPerDay.push(
-      matches.reduce<number>((acc, cur) => acc + cur.inputMinutes, 0),
+      [...inputeMatches, ...unmappedMatches].reduce<number>((acc, cur) => acc + cur.inputMinutes, 0),
     );
   }
 
@@ -79,6 +82,9 @@ const categorySummaries = computed<string[]>(() => {
 
 const grandTotal = computed<string>(() => {
   const totalMinutes = timeTableEntries.value.reduce<number>(
+    (acc, cur) => acc + cur.inputMinutes,
+    0,
+  ) + mappedEntries.unmappedEntries.reduce<number>(
     (acc, cur) => acc + cur.inputMinutes,
     0,
   );
