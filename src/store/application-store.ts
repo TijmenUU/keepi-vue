@@ -1,5 +1,5 @@
 import NokoClient from "@/noko-client";
-import { TagToCategoryMapping } from "@/types";
+import { Category } from "@/types";
 import { defineStore } from "pinia";
 
 const apiKeyLocalStorageKey = "noko-api-key";
@@ -13,8 +13,8 @@ interface IState {
     email: string;
     name: string;
   } | null;
-  categories: TagToCategoryMapping[];
-  copiedTimeTableValues: Record<string, string> | null;
+  categories: Category[];
+  copiedTimeTableValues: string[] | null;
 }
 
 export const useApplicationStore = defineStore("application", {
@@ -54,6 +54,8 @@ export const useApplicationStore = defineStore("application", {
       );
     },
     peristCategories(): void {
+      this.categories.sort(categoryCompareFn);
+
       localStorage.setItem(
         categoriesLocalStorageKey,
         JSON.stringify(this.categories),
@@ -106,7 +108,7 @@ export const useApplicationStore = defineStore("application", {
   },
 });
 
-function tryParseStoredCategories(json?: unknown): TagToCategoryMapping[] {
+function tryParseStoredCategories(json?: unknown): Category[] {
   if (json == null || typeof json !== "string") {
     return [];
   }
@@ -116,10 +118,11 @@ function tryParseStoredCategories(json?: unknown): TagToCategoryMapping[] {
     return [];
   }
 
-  const results: TagToCategoryMapping[] = [];
+  const results: Category[] = [];
   for (let i = 0; i < array.length; ++i) {
     const candidate = array[i];
     if (
+      // v1
       candidate != null &&
       typeof candidate === "object" &&
       "order" in candidate &&
@@ -137,7 +140,32 @@ function tryParseStoredCategories(json?: unknown): TagToCategoryMapping[] {
     ) {
       results.push({
         order: candidate.order,
-        archived: candidate.archived,
+        readonly: candidate.archived,
+        projectId: candidate.projectId,
+        nokoTags: candidate.nokoTags,
+        name: candidate.name,
+      });
+    } else if (
+      // v2
+      // Field "archived" renamed to "readonly"
+      candidate != null &&
+      typeof candidate === "object" &&
+      "order" in candidate &&
+      typeof candidate.order === "number" &&
+      "readonly" in candidate &&
+      typeof candidate.readonly === "boolean" &&
+      "projectId" in candidate &&
+      typeof candidate.projectId === "number" &&
+      "nokoTags" in candidate &&
+      Array.isArray(candidate.nokoTags) &&
+      (candidate.nokoTags as unknown[]).length > 0 &&
+      (candidate.nokoTags as unknown[]).every((e) => typeof e === "string") &&
+      "name" in candidate &&
+      typeof candidate.name === "string"
+    ) {
+      results.push({
+        order: candidate.order,
+        readonly: candidate.readonly,
         projectId: candidate.projectId,
         nokoTags: candidate.nokoTags,
         name: candidate.name,
@@ -147,7 +175,17 @@ function tryParseStoredCategories(json?: unknown): TagToCategoryMapping[] {
     }
   }
 
-  results.sort((a, b) => a.order - b.order);
+  results.sort(categoryCompareFn);
 
   return results;
+}
+
+function categoryCompareFn(a: Category, b: Category): number {
+  if (a.readonly && !b.readonly) {
+    return 1;
+  }
+  if (b.readonly && b.readonly) {
+    return -1;
+  }
+  return a.order - b.order;
 }

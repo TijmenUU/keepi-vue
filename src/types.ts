@@ -9,16 +9,23 @@ export const loggableDays: string[] = [
 ] as const;
 export type LoggableDay = (typeof loggableDays)[number];
 
-export type TagToCategoryMapping = {
+export type Category = {
   order: number;
-  archived: boolean;
+  readonly: boolean;
   projectId: number;
   nokoTags: string[];
   name: string;
 };
 
 export type TimeTableEntry = {
-  category: string;
-  day: LoggableDay;
-  minutes: number;
+  category: TimeTableEntryCategory;
+  dayName: LoggableDay;
+  date: Date;
+  initialMinutes: number;
+  inputMinutes: number;
 };
+
+export type TimeTableEntryCategory = {
+  projectId?: number;
+  nokoTags?: string[];
+} & Omit<Category, "projectId" | "nokoTags">;

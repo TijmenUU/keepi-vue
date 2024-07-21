@@ -1,94 +1,80 @@
+import { DateRange } from "@/date";
 import { toShortIsoDate } from "@/format";
-import { INokoPostEntryRequest, INokoPutEntryRequest } from "@/requests";
+import { INokoPostEntryRequest } from "@/requests";
 import { INokoGetEntryResponse } from "@/responses";
-import { TagToCategoryMapping, TimeTableEntry, loggableDays } from "@/types";
+import {
+  Category,
+  TimeTableEntry,
+  TimeTableEntryCategory,
+  loggableDays,
+} from "@/types";
 
-type DayAndTagMapping = {
-  date: string;
-  day: string;
-  projectId: number;
-  nokoTags: string[];
-  category: string;
-  archived: boolean;
-};
-
-type NokoTimeTableMapping = {
-  date: string;
-  day: string;
-  projectId: number;
-  nokoTags: string[];
-  category: string;
-  archived: boolean;
-  entries: INokoGetEntryResponse[];
-  minutes: number;
-};
-
-type TimeTableDelta = {
+type DeltaInNokoApiCalls = {
   creates: INokoPostEntryRequest[];
-  updates: { id: number; body: INokoPutEntryRequest }[];
   idsToDelete: number[];
 };
 type DayCategoryDelta = {
   create: INokoPostEntryRequest | null;
-  update: { id: number; body: INokoPutEntryRequest } | null;
   idsToDelete: number[];
 };
 
-export function convertToTimeTableInput(
-  weekDays: Date[],
-  categoryMapping: TagToCategoryMapping[],
-  entries: INokoGetEntryResponse[],
-): TimeTableEntry[] {
-  return getNokoToTimeTableMapping(weekDays, categoryMapping, entries).map(
-    (m) => ({ category: m.category, day: m.day, minutes: m.minutes }),
-  );
-}
-
 export function getNokoCallsForDelta(
-  weekDays: Date[],
-  categoryMapping: TagToCategoryMapping[],
-  nokoEntries: INokoGetEntryResponse[],
   timeTableEntries: TimeTableEntry[],
-): TimeTableDelta {
-  const preUserInputMapping = getNokoToTimeTableMapping(
-    weekDays,
-    categoryMapping,
-    nokoEntries,
-  );
-
+  nokoEntries: INokoGetEntryResponse[],
+): DeltaInNokoApiCalls {
   const categoryResultsPerDay: DayCategoryDelta[] = [];
-  for (let i = 0; i < preUserInputMapping.length; ++i) {
-    const original = preUserInputMapping[i];
-    if (original.archived) {
+  timeTableEntries.forEach((entry) => {
+    if (entry.category.readonly) {
       console.debug(
-        `Ignoring any changes made to the archived category ${original.category}.`,
+        `Ignoring any changes made to the readonly category ${entry.category}.`,
       );
-      continue;
+      return;
+    }
+    if (entry.category.projectId == null || entry.category.nokoTags == null) {
+      console.debug(
+        `Ignoring any changes made to the category ${entry.category} without a project ID and/or Noko tags.`,
+      );
+      return;
     }
 
-    const userInput = timeTableEntries.find(
-      (t) => t.category === original.category && t.day === original.day,
+    const entryDateAsIsoDate = toShortIsoDate(entry.date);
+    const entryOriginalNokoEntries = nokoEntries.filter(
+      (ne) =>
+        ne.date === entryDateAsIsoDate && isForCategory(ne, entry.category),
     );
-    if (userInput) {
-      categoryResultsPerDay.push(getDayDelta(original, userInput));
-    } else {
-      console.debug(
-        `Time table entry for project ${original.category} on ${original.day} seems to be missing?`,
-      );
-    }
-  }
 
-  const result: TimeTableDelta = {
+    const originalMinutes = entryOriginalNokoEntries.reduce<number>(
+      (sum, current) => sum + current.minutes,
+      0,
+    );
+    if (originalMinutes === entry.inputMinutes) {
+      console.debug(
+        `No changes in minutes for ${entry.category.name} on ${entryDateAsIsoDate}`,
+      );
+    } else {
+      let createRequest: INokoPostEntryRequest | null = null;
+      if (entry.inputMinutes > 0) {
+        createRequest = {
+          date: entryDateAsIsoDate,
+          description: entry.category.nokoTags.join(" "),
+          minutes: entry.inputMinutes,
+          project_id: entry.category.projectId,
+        };
+      }
+      categoryResultsPerDay.push({
+        create: createRequest,
+        idsToDelete: entryOriginalNokoEntries.map((ne) => ne.id),
+      });
+    }
+  });
+
+  const result: DeltaInNokoApiCalls = {
     creates: [],
-    updates: [],
     idsToDelete: [],
   };
   categoryResultsPerDay.forEach((dayResult) => {
     if (dayResult.create != null) {
       result.creates.push(dayResult.create);
-    }
-    if (dayResult.update != null) {
-      result.updates.push(dayResult.update);
     }
     if (dayResult.idsToDelete.length > 0) {
       dayResult.idsToDelete.forEach((id) => result.idsToDelete.push(id));
@@ -97,117 +83,114 @@ export function getNokoCallsForDelta(
   return result;
 }
 
-function getDayDelta(
-  original: NokoTimeTableMapping,
-  userInput: TimeTableEntry,
-): DayCategoryDelta {
-  // No changes
-  if (original.minutes === userInput.minutes) {
-    return { create: null, update: null, idsToDelete: [] };
-  }
-
-  // User removed all time
-  if (userInput.minutes <= 0) {
-    return {
-      create: null,
-      update: null,
-      idsToDelete: original.entries.map((e) => e.id),
-    };
-  }
-
-  const description = original.nokoTags.join(" ");
-  // User created a first entry
-  if (original.entries.length === 0) {
-    return {
-      create: {
-        date: original.date,
-        minutes: userInput.minutes,
-        project_id: original.projectId,
-        description,
-      },
-      update: null,
-      idsToDelete: [],
-    };
-  }
-
-  // TODO Maybe make this less destructive? It deletes all but one entry for the same tag combination
-  return {
-    create: null,
-    update: {
-      id: original.entries[0].id,
-      body: {
-        date: original.date,
-        minutes: userInput.minutes,
-        project_id: original.projectId,
-        description,
-      },
-    },
-    idsToDelete: original.entries.slice(1).map((e) => e.id),
-  };
-}
-
-function getNokoToTimeTableMapping(
-  weekDays: Date[],
-  categoryMapping: TagToCategoryMapping[],
-  entries: INokoGetEntryResponse[],
-): NokoTimeTableMapping[] {
-  const dayAndTagMapping = getDayAndTagMapping(weekDays, categoryMapping);
-  return dayAndTagMapping.map((dtm) => {
-    const filteredEntries = entries.filter(
-      (e) =>
-        dtm.category &&
-        e.date === dtm.date &&
-        e.project.id === dtm.projectId &&
-        dtm.nokoTags.length == e.tags.length &&
-        dtm.nokoTags.every((mt) =>
-          e.tags.some((et) => et.formatted_name === mt),
-        ),
-    );
-
-    return {
-      date: dtm.date,
-      day: dtm.day,
-      projectId: dtm.projectId,
-      nokoTags: dtm.nokoTags,
-      category: dtm.category,
-      archived: dtm.archived,
-      entries: filteredEntries,
-      minutes: filteredEntries.reduce<number>(
-        (ec, entry) => ec + entry.minutes,
-        0,
-      ),
-    };
-  });
-}
-
-function getDayAndTagMapping(
-  weekDays: Date[],
-  categoryMapping: TagToCategoryMapping[],
-): DayAndTagMapping[] {
-  if (weekDays.length !== loggableDays.length) {
-    throw new Error(
-      "The week days should match the loggable days as they are assumed to be a 1:1 mapping",
+export function mapToTimeTableEntries(
+  dateRange: DateRange,
+  categories: Category[],
+  nokoEntries: INokoGetEntryResponse[],
+): { entries: TimeTableEntry[]; unmappedEntries: TimeTableEntry[] } {
+  if (dateRange.dates.length !== loggableDays.length) {
+    throw Error(
+      `Expected the date range to be 1 week, but it was ${dateRange.dates.length} day(s)`,
     );
   }
-
-  const dayToDateMapping = weekDays.map((d, index) => ({
-    date: toShortIsoDate(d),
-    day: loggableDays[index],
-  }));
-
-  const results: DayAndTagMapping[] = [];
-  for (let i = 0; i < dayToDateMapping.length; ++i) {
-    for (let j = 0; j < categoryMapping.length; ++j) {
-      results.push({
-        day: dayToDateMapping[i].day,
-        date: dayToDateMapping[i].date,
-        projectId: categoryMapping[j].projectId,
-        nokoTags: categoryMapping[j].nokoTags,
-        category: categoryMapping[j].name,
-        archived: categoryMapping[j].archived,
-      });
+  for (let i = 0; i < dateRange.dates.length; ++i) {
+    for (let j = i + 1; j < dateRange.dates.length; ++j) {
+      if (dateRange.dates[i].getTime() >= dateRange.dates[j].getTime()) {
+        throw Error(
+          "Expected the date range dates to be sorted ascendingly and unique",
+        );
+      }
     }
   }
 
-  return results;
+  let mappedNokoEntryIds: number[] = [];
+  const timeTableEntries: TimeTableEntry[] = [];
+  categories.forEach((category) => {
+    dateRange.dates.forEach((date, dateIndex) => {
+      const entryIsoDate = toShortIsoDate(date);
+
+      const matchingNokoEntries = nokoEntries.filter(
+        (ne) => ne.date === entryIsoDate && isForCategory(ne, category),
+      );
+      mappedNokoEntryIds = [
+        ...mappedNokoEntryIds,
+        ...matchingNokoEntries.map((ne) => ne.id),
+      ];
+
+      const initialMinutes = matchingNokoEntries.reduce<number>(
+        (acc, current) => acc + current.minutes,
+        0,
+      );
+      timeTableEntries.push({
+        date: date,
+        category: category,
+        dayName: loggableDays[dateIndex],
+        initialMinutes: initialMinutes,
+        inputMinutes: initialMinutes,
+      });
+    });
+  });
+
+  const unmappedNokoEntries = nokoEntries.filter(
+    (ne) => !mappedNokoEntryIds.includes(ne.id),
+  );
+  if (unmappedNokoEntries.length === 0) {
+    return {
+      entries: timeTableEntries,
+      unmappedEntries: [],
+    };
+  }
+
+  return {
+    entries: timeTableEntries,
+    unmappedEntries: dateRange.dates.map((date, dateIndex) => {
+      const entryIsoDate = toShortIsoDate(date);
+      const totalMinutes = unmappedNokoEntries
+        .filter((ne) => ne.date === entryIsoDate)
+        .reduce<number>((acc, entry) => acc + entry.minutes, 0);
+      return {
+        date: date,
+        dayName: loggableDays[dateIndex],
+        category: {
+          name: "Unmapped",
+          order: Number.MAX_SAFE_INTEGER,
+          readonly: true,
+        },
+        initialMinutes: totalMinutes,
+        inputMinutes: totalMinutes,
+      };
+    }),
+  };
+}
+
+function isForCategory(
+  nokoEntry: INokoGetEntryResponse,
+  category: Category | TimeTableEntryCategory,
+): boolean {
+  return (
+    category.projectId != null &&
+    category.nokoTags != null &&
+    nokoEntry.project.id === category.projectId &&
+    areTagsEqual(nokoEntry, category)
+  );
+}
+
+function areTagsEqual(
+  nokoEntry: INokoGetEntryResponse,
+  category: Category | TimeTableEntryCategory,
+): boolean {
+  if (
+    category.nokoTags == null ||
+    nokoEntry.tags.length !== category.nokoTags.length
+  ) {
+    return false;
+  }
+
+  for (let i = 0; i < nokoEntry.tags.length; ++i) {
+    if (!category.nokoTags.includes(nokoEntry.tags[i].formatted_name)) {
+      return false;
+    }
+  }
+
+  return true;
 }
