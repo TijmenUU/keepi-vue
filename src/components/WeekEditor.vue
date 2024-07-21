@@ -5,9 +5,9 @@ import { DateRange } from "@/date";
 import { toHoursMinutesNotation, tryParseTimeNotation } from "@/format";
 import { INokoGetEntryResponse } from "@/responses";
 import { useApplicationStore } from "@/store/application-store";
-import { convertToTimeTableInput, getNokoCallsForDelta } from "@/transformer";
+import { mapToTimeTableEntries, getNokoCallsForDelta } from "@/transformer";
 import { LoggableDay, loggableDays, TimeTableEntry } from "@/types";
-import { ref, computed, reactive } from "vue";
+import { ref, computed } from "vue";
 
 const isSaving = ref(false);
 
@@ -24,121 +24,66 @@ const emits = defineEmits<{
 const applicationStore = useApplicationStore();
 const nokoClient = applicationStore.getNokoClient();
 
-const initialValues: TimeTableEntry[] = convertToTimeTableInput(
-  props.dateRange.dates,
-  applicationStore.categories,
-  props.entries,
+const timeTableEntries = ref<TimeTableEntry[]>(
+  mapToTimeTableEntries(
+    props.dateRange,
+    applicationStore.categories,
+    props.entries,
+  ),
 );
+const inputValues = ref<string[]>(
+  timeTableEntries.value.map((v) => toHoursMinutesNotation(v.inputMinutes)),
+);
+const inputValidationMode = ref<"optional-time" | undefined>(undefined);
 
-const createKey = (category: string, day: string) => `${category}${day}`;
+const onDayInput = (value: string, index: number) => {
+  if (index < 0 || index > inputValues.value.length) {
+    throw new Error(`Input index ${index} is out of range`);
+  }
 
-const generateValues = (
-  initialValues: TimeTableEntry[],
-): Record<string, string> => {
-  const result: TimeTableEntry[] = [];
-  applicationStore.categories.forEach((category) => {
-    loggableDays.forEach((day) => {
-      result.push({
-        category: category.name,
-        day,
-        minutes:
-          initialValues.find(
-            (e) => e.category === category.name && e.day === day,
-          )?.minutes ?? 0,
-      });
-    });
-  });
+  inputValues.value[index] = value;
 
-  return result.reduce<Record<string, string>>(
-    (acc, entry) => ({
-      ...acc,
-      [createKey(entry.category, entry.day)]: toHoursMinutesNotation(
-        entry.minutes,
-      ),
-    }),
-    {},
-  );
+  const parsedValue = tryParseTimeNotation(value) ?? 0;
+  timeTableEntries.value[index].inputMinutes = parsedValue;
 };
 
-const values: Record<string, string> = reactive(generateValues(initialValues));
-const validationMode = ref<"optional-time" | undefined>(undefined);
+const daySummaries = computed<string[]>(() => {
+  const minutesPerDay: number[] = [];
+  for (let i = 0; i < loggableDays.length; ++i) {
+    const matches = timeTableEntries.value.filter(
+      (v) => v.dayName === loggableDays[i],
+    );
+    minutesPerDay.push(
+      matches.reduce<number>((acc, cur) => acc + cur.inputMinutes, 0),
+    );
+  }
 
-const daySummaries = computed<Record<string, string>>(() => {
-  const aggregates = loggableDays.reduce<Record<string, number>>(
-    (acc, day) => ({
-      ...acc,
-      [day]: 0,
-    }),
-    {},
-  );
-
-  Object.keys(values).forEach((key) => {
-    const value = tryParseTimeNotation(values[key]);
-    if (value != null) {
-      const parts = splitKey(key);
-      aggregates[parts[1]] += value;
-    }
-  });
-
-  return loggableDays.reduce<Record<string, string>>(
-    (acc, day) => ({
-      ...acc,
-      [day]: toHoursMinutesNotation(aggregates[day]),
-    }),
-    {},
-  );
+  return minutesPerDay.map((m) => toHoursMinutesNotation(m));
 });
 
-const projectSummaries = computed<Record<string, string>>(() => {
-  const aggregates = applicationStore.categories.reduce<Record<string, number>>(
-    (acc, entry) => ({
-      ...acc,
-      [entry.name]: 0,
-    }),
-    {},
-  );
+const categorySummaries = computed<string[]>(() => {
+  const minutesPerProject: number[] = [];
+  for (let i = 0; i < applicationStore.categories.length; ++i) {
+    const category = applicationStore.categories[i];
+    const matches = timeTableEntries.value.filter(
+      (v) =>
+        v.category.name === category.name &&
+        v.category.order === category.order,
+    );
+    minutesPerProject.push(
+      matches.reduce<number>((acc, cur) => acc + cur.inputMinutes, 0),
+    );
+  }
 
-  Object.keys(values).forEach((key) => {
-    const value = tryParseTimeNotation(values[key]);
-    if (value != null) {
-      const parts = splitKey(key);
-      aggregates[parts[0]] += value;
-    }
-  });
-
-  return applicationStore.categories.reduce<Record<string, string>>(
-    (acc, entry) => ({
-      ...acc,
-      [entry.name]: toHoursMinutesNotation(aggregates[entry.name]),
-    }),
-    {},
-  );
+  return minutesPerProject.map((m) => toHoursMinutesNotation(m));
 });
 
-const projectTotal = computed<string>(() => {
-  const aggregates = applicationStore.categories.reduce<Record<string, number>>(
-    (acc, entry) => ({
-      ...acc,
-      [entry.name]: 0,
-    }),
-    {},
+const grandTotal = computed<string>(() => {
+  const totalMinutes = timeTableEntries.value.reduce<number>(
+    (acc, cur) => acc + cur.inputMinutes,
+    0,
   );
-
-  Object.keys(values).forEach((key) => {
-    const value = tryParseTimeNotation(values[key]);
-    if (value != null) {
-      const parts = splitKey(key);
-      aggregates[parts[0]] += value;
-    }
-  });
-
-  return toHoursMinutesNotation(
-    applicationStore.categories.reduce<number>(
-      (acc, entry) =>
-        acc + (tryParseTimeNotation(projectSummaries.value[entry.name]) ?? 0),
-      0,
-    ),
-  );
+  return toHoursMinutesNotation(totalMinutes);
 });
 
 const today = computed<LoggableDay | null>(() => {
@@ -155,144 +100,95 @@ const today = computed<LoggableDay | null>(() => {
   return loggableDays[dateIndex];
 });
 
-const splitKey = (key: string): [string, LoggableDay] => {
-  const categoryPart = applicationStore.categories.find((c) =>
-    key.startsWith(c.name),
-  );
-  if (categoryPart == null) {
-    throw new Error(`Invalid key ${key}: unknown category`);
-  }
-
-  const dayPart = key.substring(categoryPart.name.length);
-  if (!loggableDays.includes(dayPart)) {
-    throw new Error(`Invalid key ${key}: unknown day ${dayPart}`);
-  }
-
-  return [categoryPart.name, dayPart];
-};
-
-const onKey = (direction: "up" | "down" | "left" | "right") => {
+const onKey = (direction: "up" | "down") => {
   if (!(document.activeElement instanceof HTMLInputElement)) {
     return;
   }
 
   const currentInputName = document.activeElement.name;
-  if (!currentInputName) {
+  if (
+    !currentInputName ||
+    currentInputName.match(/^dayinput-[0-9]+$/) == null
+  ) {
+    console.debug(
+      `Ignoring input key event on unexpected input with name ${currentInputName}`,
+    );
     return;
   }
 
-  const nameParts = splitKey(currentInputName);
-  let projectIndex = -1;
-  let dayIndex = -1;
+  const currentEntryIndex = parseInt(currentInputName.split("-")[1]);
+  let newIndex = currentEntryIndex;
   switch (direction) {
     case "up":
-      projectIndex = applicationStore.categories.findIndex(
-        (c) => c.name === nameParts[0],
-      );
-      if (projectIndex > 0) {
-        tryFocusOn(
-          createKey(
-            applicationStore.categories[projectIndex - 1].name,
-            nameParts[1],
-          ),
-        );
-      } else {
-        tryFocusOn(
-          createKey(
-            applicationStore.categories[applicationStore.categories.length - 1]
-              .name,
-            nameParts[1],
-          ),
-        );
+      newIndex -= loggableDays.length;
+      if (newIndex < 0) {
+        newIndex += inputValues.value.length;
       }
       break;
 
     case "down":
-      projectIndex = applicationStore.categories.findIndex(
-        (c) => c.name === nameParts[0],
-      );
-      if (projectIndex === applicationStore.categories.length - 1) {
-        tryFocusOn(
-          createKey(applicationStore.categories[0].name, nameParts[1]),
-        );
-      } else {
-        tryFocusOn(
-          createKey(
-            applicationStore.categories[projectIndex + 1].name,
-            nameParts[1],
-          ),
-        );
-      }
-      break;
-
-    case "left":
-      dayIndex = loggableDays.findIndex((d) => d === nameParts[1]);
-      if (dayIndex > 0) {
-        tryFocusOn(createKey(nameParts[0], loggableDays[dayIndex - 1]));
-      } else {
-        tryFocusOn(
-          createKey(nameParts[0], loggableDays[loggableDays.length - 1]),
-        );
-      }
-      break;
-
-    case "right":
-      dayIndex = loggableDays.findIndex((d) => d === nameParts[1]);
-      if (dayIndex === loggableDays.length - 1) {
-        tryFocusOn(createKey(nameParts[0], loggableDays[0]));
-      } else {
-        tryFocusOn(createKey(nameParts[0], loggableDays[dayIndex + 1]));
-      }
+      newIndex = (newIndex + loggableDays.length) % inputValues.value.length;
       break;
   }
+
+  tryFocusOn(`dayinput-${newIndex}`);
 };
 
 function tryFocusOn(name: string) {
   const hits = document.getElementsByName(name);
   if (hits.length > 0) {
     hits[0].focus();
+  } else {
+    console.debug(`Attempted focus on ${name} yielded no elements`);
   }
 }
+
+const onCopyTimeTableValues = () => {
+  const firstReadOnlyCategoryIndex = applicationStore.categories.findIndex(
+    (c) => c.readonly,
+  );
+  if (firstReadOnlyCategoryIndex >= 0) {
+    applicationStore.copiedTimeTableValues = inputValues.value.slice(
+      0,
+      firstReadOnlyCategoryIndex * loggableDays.length,
+    );
+  } else {
+    applicationStore.copiedTimeTableValues = inputValues.value.slice();
+  }
+};
 
 const onPasteCopiedTimeTableValues = () => {
   if (applicationStore.copiedTimeTableValues == null) {
     return;
   }
+  if (
+    applicationStore.copiedTimeTableValues.length > inputValues.value.length
+  ) {
+    console.error(
+      "Copied values cannot fit in the current set of inputs",
+      applicationStore.copiedTimeTableValues,
+      inputValues.value,
+    );
+    return;
+  }
 
-  Object.keys(applicationStore.copiedTimeTableValues).forEach((key) => {
-    if (values[key] != null) {
-      values[key] = applicationStore.copiedTimeTableValues![key];
-    } else {
-      console.debug(
-        `Tried to copy ${key} value ${applicationStore.copiedTimeTableValues![key]} but it does not exist in the time table!`,
-      );
-    }
+  applicationStore.copiedTimeTableValues.forEach((copy, index) => {
+    onDayInput(copy, index);
   });
 };
 
-const onSubmit = () => {
-  const entries = Object.entries(values);
-
-  const results: TimeTableEntry[] = [];
-  for (const [key, value] of entries) {
-    const [category, day] = splitKey(key);
-    const minutes = !!value ? tryParseTimeNotation(value) : 0;
-    if (minutes == null) {
-      validationMode.value = "optional-time";
-      throw new Error(`${value} cannot be parsed as 00u00m`);
-    }
-
-    results.push({
-      category,
-      day,
-      minutes,
-    });
+const getInputIndex = (categoryIndex: number, dayIndex: number): number => {
+  if (categoryIndex < 0 || categoryIndex > applicationStore.categories.length) {
+    throw new Error(`Category index value ${categoryIndex} is out of range`);
+  }
+  if (dayIndex < 0 || dayIndex > loggableDays.length) {
+    throw new Error(`Day index value ${dayIndex} is out of range`);
   }
 
-  onSave(results);
+  return categoryIndex * loggableDays.length + dayIndex;
 };
 
-const onSave = async (userInput: TimeTableEntry[]): Promise<void> => {
+const onSubmit = async () => {
   if (isSaving.value) {
     return;
   }
@@ -300,20 +196,10 @@ const onSave = async (userInput: TimeTableEntry[]): Promise<void> => {
   isSaving.value = true;
   let madeChanges = false;
   try {
-    const delta = getNokoCallsForDelta(
-      props.dateRange.dates,
-      applicationStore.categories,
-      props.entries,
-      userInput,
-    );
+    const delta = getNokoCallsForDelta(timeTableEntries.value, props.entries);
     for (let i = 0; i < delta.creates.length; ++i) {
       console.debug("Creating Noko entry", delta.creates[i]);
       await nokoClient.createEntry(delta.creates[i]);
-      madeChanges = true;
-    }
-    for (let i = 0; i < delta.updates.length; ++i) {
-      console.debug("Updating Noko entry", delta.updates[i]);
-      await nokoClient.updateEntry(delta.updates[i].id, delta.updates[i].body);
       madeChanges = true;
     }
     for (let i = 0; i < delta.idsToDelete.length; ++i) {
@@ -362,36 +248,43 @@ const onSave = async (userInput: TimeTableEntry[]): Promise<void> => {
             </tr>
 
             <tr
-              v-for="category in applicationStore.categories"
+              v-for="(category, categoryIndex) in applicationStore.categories"
               :key="category.name"
-              v-show="
-                projectSummaries[category.name] != '' || !category.archived
-              "
             >
               <td>
-                <span class="pr-1">{{ category.name }}</span>
+                <span
+                  class="pr-1"
+                  :class="{ 'text-gray-500': category.readonly }"
+                  >{{ category.name }}</span
+                >
               </td>
+
               <td
-                v-for="day in loggableDays"
-                :key="createKey(category.name, day)"
+                v-for="(_, dayIndex) in loggableDays"
+                :key="`${category.name}-${dayIndex}`"
               >
                 <KeepiInput
-                  :name="createKey(category.name, day)"
-                  v-model="values[createKey(category.name, day)]"
-                  :readonly="category.archived"
-                  :tabindex="category.archived ? -1 : 0"
-                  :input-validation="validationMode"
+                  :name="`dayinput-${getInputIndex(categoryIndex, dayIndex)}`"
+                  :model-value="
+                    inputValues[getInputIndex(categoryIndex, dayIndex)]
+                  "
+                  @update:model-value="
+                    onDayInput($event, getInputIndex(categoryIndex, dayIndex))
+                  "
+                  :readonly="category.readonly"
+                  :tabindex="category.readonly ? -1 : 0"
+                  :input-validation="inputValidationMode"
+                  :class="{ 'text-gray-500': category.readonly }"
                   style="width: 65px"
                   @keyup.up="onKey('up')"
                   @keyup.down="onKey('down')"
-                  @keyup.left="onKey('left')"
-                  @keyup.right="onKey('right')"
                 />
               </td>
+
               <td class="text-center text-gray-500">
                 <div style="min-width: 65px">
                   <span class="pl-1">
-                    {{ projectSummaries[category.name] }}
+                    {{ categorySummaries[categoryIndex] }}
                   </span>
                 </div>
               </td>
@@ -399,17 +292,22 @@ const onSave = async (userInput: TimeTableEntry[]): Promise<void> => {
 
             <tr>
               <td></td>
-              <td v-for="day in loggableDays" class="text-center text-gray-500">
+
+              <td
+                v-for="(_, index) in loggableDays"
+                class="text-center text-gray-500"
+              >
                 <div class="min-h-6">
                   <span>
-                    {{ daySummaries[day] }}
+                    {{ daySummaries[index] }}
                   </span>
                 </div>
               </td>
+
               <td class="text-center text-gray-500">
                 <div class="min-h-6" style="min-width: 65px">
                   <span>
-                    {{ projectTotal }}
+                    {{ grandTotal }}
                   </span>
                 </div>
               </td>
@@ -424,7 +322,7 @@ const onSave = async (userInput: TimeTableEntry[]): Promise<void> => {
             <button
               title="Kopieer week"
               class="mr-1"
-              @click="applicationStore.copiedTimeTableValues = { ...values }"
+              @click="onCopyTimeTableValues"
             >
               <svg
                 data-slot="icon"

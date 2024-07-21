@@ -9,7 +9,7 @@ import { useRouter } from "vue-router";
 type CategoryEntry = {
   id: number;
   order: string;
-  archived: boolean;
+  readonly: boolean;
   projectId: number;
   nokoTags: string[];
   name: string;
@@ -37,16 +37,14 @@ const toAdd = reactive({
 });
 let nextCategoryId = 0;
 const values: CategoryEntry[] = reactive(
-  applicationStore.categories
-    .map((c, index) => ({
-      id: nextCategoryId++,
-      archived: c.archived,
-      order: index.toString(),
-      projectId: c.projectId,
-      nokoTags: c.nokoTags.slice(),
-      name: c.name,
-    }))
-    .sort((a, b) => parseInt(a.order) - parseInt(b.order)),
+  applicationStore.categories.map((c, index) => ({
+    id: nextCategoryId++,
+    readonly: c.readonly,
+    order: index.toString(),
+    projectId: c.projectId,
+    nokoTags: c.nokoTags.slice(),
+    name: c.name,
+  })),
 );
 
 const getProjectName = (id: number): string => {
@@ -112,7 +110,7 @@ const onAddCategory = () => {
 
   values.push({
     id: nextCategoryId++,
-    archived: false,
+    readonly: false,
     order: values.length.toString(),
     projectId,
     nokoTags: toAdd.nokoTags,
@@ -155,15 +153,13 @@ const onSubmit = async () => {
       return;
     }
 
-    applicationStore.categories = values
-      .map((v) => ({
-        order: parseInt(v.order),
-        archived: v.archived,
-        projectId: v.projectId,
-        nokoTags: v.nokoTags,
-        name: v.name,
-      }))
-      .sort((a, b) => a.order - b.order);
+    applicationStore.categories = values.map((v) => ({
+      order: parseInt(v.order),
+      readonly: v.readonly,
+      projectId: v.projectId,
+      nokoTags: v.nokoTags,
+      name: v.name,
+    }));
     applicationStore.peristCategories();
 
     await router.push("/");
@@ -206,7 +202,7 @@ const onSubmit = async () => {
               <td>{{ getProjectName(value.projectId) }}</td>
               <td>{{ value.nokoTags.join(", ") }}</td>
               <td>
-                <KeepiCheckbox v-model="value.archived" type="checkbox" />
+                <KeepiCheckbox v-model="value.readonly" type="checkbox" />
               </td>
               <td>
                 <button
@@ -324,7 +320,7 @@ const onSubmit = async () => {
               <!-- todo add tag suggestions here -->
             </td>
             <td>
-              <!-- Adding archived tags is not in scope for now -->
+              <!-- Adding readonly tags is not in scope for now -->
             </td>
             <td class="align-top">
               <KeepiButton
