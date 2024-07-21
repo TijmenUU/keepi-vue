@@ -720,6 +720,57 @@ describe("transformer", () => {
         description: "#Development",
       });
     });
+
+    test("ignores categories without a project ID or Noko tags", () => {
+      const categoryMapping = getTestTagToCategoryMappings();
+      categoryMapping[2].readonly = true;
+      categoryMapping[3].readonly = true;
+      const entries = getAverageWorkweekEntries();
+
+      // The complete average workweek scenario
+      const input = mapToTimeTableEntries(
+        getTestDateRange(),
+        categoryMapping,
+        entries,
+      );
+      input.forEach((entry) => {
+        if (entry.category.name === categoryMapping[2].name) {
+          entry.category.projectId = undefined;
+        } else if (entry.category.name === categoryMapping[3].name) {
+          entry.category.nokoTags = undefined;
+        }
+      });
+
+      const result = getNokoCallsForDelta(input, []);
+
+      expect(result.creates.length).toBe(4);
+      expect(result.idsToDelete.length).toBe(0);
+
+      expect(result.creates).toContainEqual({
+        date: "2024-01-22",
+        minutes: 480,
+        project_id: 1,
+        description: "#Development",
+      });
+      expect(result.creates).toContainEqual({
+        date: "2024-01-23",
+        minutes: 480,
+        project_id: 1,
+        description: "#Development",
+      });
+      expect(result.creates).toContainEqual({
+        date: "2024-01-24",
+        minutes: 420,
+        project_id: 1,
+        description: "#Development",
+      });
+      expect(result.creates).toContainEqual({
+        date: "2024-01-26",
+        minutes: 480,
+        project_id: 1,
+        description: "#Development",
+      });
+    });
   });
 });
 

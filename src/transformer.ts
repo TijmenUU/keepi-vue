@@ -2,7 +2,12 @@ import { DateRange } from "@/date";
 import { toShortIsoDate } from "@/format";
 import { INokoPostEntryRequest } from "@/requests";
 import { INokoGetEntryResponse } from "@/responses";
-import { Category, TimeTableEntry, loggableDays } from "@/types";
+import {
+  Category,
+  TimeTableEntry,
+  TimeTableEntryCategory,
+  loggableDays,
+} from "@/types";
 
 type DeltaInNokoApiCalls = {
   creates: INokoPostEntryRequest[];
@@ -22,6 +27,12 @@ export function getNokoCallsForDelta(
     if (entry.category.readonly) {
       console.debug(
         `Ignoring any changes made to the readonly category ${entry.category}.`,
+      );
+      return;
+    }
+    if (entry.category.projectId == null || entry.category.nokoTags == null) {
+      console.debug(
+        `Ignoring any changes made to the category ${entry.category} without a project ID and/or Noko tags.`,
       );
       return;
     }
@@ -118,9 +129,11 @@ export function mapToTimeTableEntries(
 
 function isForCategory(
   nokoEntry: INokoGetEntryResponse,
-  category: Category,
+  category: Category | TimeTableEntryCategory,
 ): boolean {
   return (
+    category.projectId != null &&
+    category.nokoTags != null &&
     nokoEntry.project.id === category.projectId &&
     areTagsEqual(nokoEntry, category)
   );
@@ -128,9 +141,12 @@ function isForCategory(
 
 function areTagsEqual(
   nokoEntry: INokoGetEntryResponse,
-  category: Category,
+  category: Category | TimeTableEntryCategory,
 ): boolean {
-  if (nokoEntry.tags.length !== category.nokoTags.length) {
+  if (
+    category.nokoTags == null ||
+    nokoEntry.tags.length !== category.nokoTags.length
+  ) {
     return false;
   }
 

@@ -18,9 +18,14 @@ export type Category = {
 };
 
 export type TimeTableEntry = {
-  category: Category;
+  category: TimeTableEntryCategory;
   dayName: LoggableDay;
   date: Date;
   initialMinutes: number;
   inputMinutes: number;
 };
+
+export type TimeTableEntryCategory = {
+  projectId?: number;
+  nokoTags?: string[];
+} & Omit<Category, "projectId" | "nokoTags">;
