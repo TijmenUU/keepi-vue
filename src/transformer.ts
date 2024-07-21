@@ -87,7 +87,7 @@ export function mapToTimeTableEntries(
   dateRange: DateRange,
   categories: Category[],
   nokoEntries: INokoGetEntryResponse[],
-): TimeTableEntry[] {
+): { entries: TimeTableEntry[]; unmappedEntries: TimeTableEntry[] } {
   if (dateRange.dates.length !== loggableDays.length) {
     throw Error(
       `Expected the date range to be 1 week, but it was ${dateRange.dates.length} day(s)`,
@@ -103,13 +103,20 @@ export function mapToTimeTableEntries(
     }
   }
 
+  let mappedNokoEntryIds: number[] = [];
   const timeTableEntries: TimeTableEntry[] = [];
   categories.forEach((category) => {
     dateRange.dates.forEach((date, dateIndex) => {
       const entryIsoDate = toShortIsoDate(date);
+
       const matchingNokoEntries = nokoEntries.filter(
         (ne) => ne.date === entryIsoDate && isForCategory(ne, category),
       );
+      mappedNokoEntryIds = [
+        ...mappedNokoEntryIds,
+        ...matchingNokoEntries.map((ne) => ne.id),
+      ];
+
       const initialMinutes = matchingNokoEntries.reduce<number>(
         (acc, current) => acc + current.minutes,
         0,
@@ -124,7 +131,36 @@ export function mapToTimeTableEntries(
     });
   });
 
-  return timeTableEntries;
+  const unmappedNokoEntries = nokoEntries.filter(
+    (ne) => !mappedNokoEntryIds.includes(ne.id),
+  );
+  if (unmappedNokoEntries.length === 0) {
+    return {
+      entries: timeTableEntries,
+      unmappedEntries: [],
+    };
+  }
+
+  return {
+    entries: timeTableEntries,
+    unmappedEntries: dateRange.dates.map((date, dateIndex) => {
+      const entryIsoDate = toShortIsoDate(date);
+      const totalMinutes = unmappedNokoEntries
+        .filter((ne) => ne.date === entryIsoDate)
+        .reduce<number>((acc, entry) => acc + entry.minutes, 0);
+      return {
+        date: date,
+        dayName: loggableDays[dateIndex],
+        category: {
+          name: "Unmapped",
+          order: Number.MAX_SAFE_INTEGER,
+          readonly: true,
+        },
+        initialMinutes: totalMinutes,
+        inputMinutes: totalMinutes,
+      };
+    }),
+  };
 }
 
 function isForCategory(

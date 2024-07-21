@@ -24,13 +24,12 @@ const emits = defineEmits<{
 const applicationStore = useApplicationStore();
 const nokoClient = applicationStore.getNokoClient();
 
-const timeTableEntries = ref<TimeTableEntry[]>(
-  mapToTimeTableEntries(
-    props.dateRange,
-    applicationStore.categories,
-    props.entries,
-  ),
+const mappedEntries = mapToTimeTableEntries(
+  props.dateRange,
+  applicationStore.categories,
+  props.entries,
 );
+const timeTableEntries = ref<TimeTableEntry[]>(mappedEntries.entries);
 const inputValues = ref<string[]>(
   timeTableEntries.value.map((v) => toHoursMinutesNotation(v.inputMinutes)),
 );
@@ -286,6 +285,25 @@ const onSubmit = async () => {
                   <span class="pl-1">
                     {{ categorySummaries[categoryIndex] }}
                   </span>
+                </div>
+              </td>
+            </tr>
+
+            <tr class="text-gray-500" v-if="mappedEntries.unmappedEntries.length > 0">
+              <td>Overige</td>
+
+              <td
+                v-for="(_, index) in loggableDays"
+                class="text-center"
+              >
+                <div class="min-h-6">
+                  {{ toHoursMinutesNotation(mappedEntries.unmappedEntries[index].inputMinutes) }}
+                </div>
+              </td>
+
+              <td class="text-center">
+                <div class="min-h-6" style="min-width: 65px">
+                  {{ toHoursMinutesNotation(mappedEntries.unmappedEntries.reduce<number>((acc, cur) => acc + cur.inputMinutes, 0)) }}
                 </div>
               </td>
             </tr>

@@ -23,7 +23,7 @@ describe("transformer", () => {
             weekNumber: 4,
             year: 2024,
           },
-          getTestTagToCategoryMappings(),
+          getTestCategories(),
           [],
         ),
       ).toThrowError(
@@ -46,7 +46,7 @@ describe("transformer", () => {
             weekNumber: 4,
             year: 2024,
           },
-          getTestTagToCategoryMappings(),
+          getTestCategories(),
           [],
         ),
       ).toThrowError(
@@ -70,7 +70,7 @@ describe("transformer", () => {
             weekNumber: 4,
             year: 2024,
           },
-          getTestTagToCategoryMappings(),
+          getTestCategories(),
           [],
         ),
       ).toThrowError(
@@ -81,7 +81,7 @@ describe("transformer", () => {
     test("entries should be sorted by category input order then by date ascending", () => {
       const result = mapToTimeTableEntries(
         getTestDateRange(),
-        getTestTagToCategoryMappings(),
+        getTestCategories(),
         [
           {
             id: 5004,
@@ -176,141 +176,180 @@ describe("transformer", () => {
         ],
       );
 
-      expect(result.length).toBe(28);
+      expect(result.entries.length).toBe(28);
+      expect(result.unmappedEntries.length).toBe(0);
 
-      expect(result[0].category.name).toBe("Development");
-      expect(result[1].category.name).toBe("Development");
-      expect(result[2].category.name).toBe("Development");
-      expect(result[3].category.name).toBe("Development");
-      expect(result[4].category.name).toBe("Development");
-      expect(result[5].category.name).toBe("Development");
-      expect(result[6].category.name).toBe("Development");
+      expect(result.entries[0].category.name).toBe("Development");
+      expect(result.entries[1].category.name).toBe("Development");
+      expect(result.entries[2].category.name).toBe("Development");
+      expect(result.entries[3].category.name).toBe("Development");
+      expect(result.entries[4].category.name).toBe("Development");
+      expect(result.entries[5].category.name).toBe("Development");
+      expect(result.entries[6].category.name).toBe("Development");
 
-      expect(result[7].category.name).toBe("Vacation");
-      expect(result[8].category.name).toBe("Vacation");
-      expect(result[9].category.name).toBe("Vacation");
-      expect(result[10].category.name).toBe("Vacation");
-      expect(result[11].category.name).toBe("Vacation");
-      expect(result[12].category.name).toBe("Vacation");
-      expect(result[13].category.name).toBe("Vacation");
+      expect(result.entries[7].category.name).toBe("Vacation");
+      expect(result.entries[8].category.name).toBe("Vacation");
+      expect(result.entries[9].category.name).toBe("Vacation");
+      expect(result.entries[10].category.name).toBe("Vacation");
+      expect(result.entries[11].category.name).toBe("Vacation");
+      expect(result.entries[12].category.name).toBe("Vacation");
+      expect(result.entries[13].category.name).toBe("Vacation");
 
-      expect(result[14].category.name).toBe("National holiday");
-      expect(result[15].category.name).toBe("National holiday");
-      expect(result[16].category.name).toBe("National holiday");
-      expect(result[17].category.name).toBe("National holiday");
-      expect(result[18].category.name).toBe("National holiday");
-      expect(result[19].category.name).toBe("National holiday");
-      expect(result[20].category.name).toBe("National holiday");
+      expect(result.entries[14].category.name).toBe("National holiday");
+      expect(result.entries[15].category.name).toBe("National holiday");
+      expect(result.entries[16].category.name).toBe("National holiday");
+      expect(result.entries[17].category.name).toBe("National holiday");
+      expect(result.entries[18].category.name).toBe("National holiday");
+      expect(result.entries[19].category.name).toBe("National holiday");
+      expect(result.entries[20].category.name).toBe("National holiday");
 
-      expect(result[21].category.name).toBe("Presentation");
-      expect(result[22].category.name).toBe("Presentation");
-      expect(result[23].category.name).toBe("Presentation");
-      expect(result[24].category.name).toBe("Presentation");
-      expect(result[25].category.name).toBe("Presentation");
-      expect(result[26].category.name).toBe("Presentation");
-      expect(result[27].category.name).toBe("Presentation");
+      expect(result.entries[21].category.name).toBe("Presentation");
+      expect(result.entries[22].category.name).toBe("Presentation");
+      expect(result.entries[23].category.name).toBe("Presentation");
+      expect(result.entries[24].category.name).toBe("Presentation");
+      expect(result.entries[25].category.name).toBe("Presentation");
+      expect(result.entries[26].category.name).toBe("Presentation");
+      expect(result.entries[27].category.name).toBe("Presentation");
 
-      expect(toShortIsoDate(result[0].date)).toBe("2024-01-22");
-      expect(toShortIsoDate(result[7].date)).toBe("2024-01-22");
-      expect(toShortIsoDate(result[14].date)).toBe("2024-01-22");
-      expect(toShortIsoDate(result[21].date)).toBe("2024-01-22");
+      expect(toShortIsoDate(result.entries[0].date)).toBe("2024-01-22");
+      expect(toShortIsoDate(result.entries[7].date)).toBe("2024-01-22");
+      expect(toShortIsoDate(result.entries[14].date)).toBe("2024-01-22");
+      expect(toShortIsoDate(result.entries[21].date)).toBe("2024-01-22");
 
-      expect(toShortIsoDate(result[1].date)).toBe("2024-01-23");
-      expect(toShortIsoDate(result[8].date)).toBe("2024-01-23");
-      expect(toShortIsoDate(result[15].date)).toBe("2024-01-23");
-      expect(toShortIsoDate(result[22].date)).toBe("2024-01-23");
+      expect(toShortIsoDate(result.entries[1].date)).toBe("2024-01-23");
+      expect(toShortIsoDate(result.entries[8].date)).toBe("2024-01-23");
+      expect(toShortIsoDate(result.entries[15].date)).toBe("2024-01-23");
+      expect(toShortIsoDate(result.entries[22].date)).toBe("2024-01-23");
 
-      expect(toShortIsoDate(result[2].date)).toBe("2024-01-24");
-      expect(toShortIsoDate(result[9].date)).toBe("2024-01-24");
-      expect(toShortIsoDate(result[16].date)).toBe("2024-01-24");
-      expect(toShortIsoDate(result[23].date)).toBe("2024-01-24");
+      expect(toShortIsoDate(result.entries[2].date)).toBe("2024-01-24");
+      expect(toShortIsoDate(result.entries[9].date)).toBe("2024-01-24");
+      expect(toShortIsoDate(result.entries[16].date)).toBe("2024-01-24");
+      expect(toShortIsoDate(result.entries[23].date)).toBe("2024-01-24");
 
-      expect(toShortIsoDate(result[3].date)).toBe("2024-01-25");
-      expect(toShortIsoDate(result[10].date)).toBe("2024-01-25");
-      expect(toShortIsoDate(result[17].date)).toBe("2024-01-25");
-      expect(toShortIsoDate(result[24].date)).toBe("2024-01-25");
+      expect(toShortIsoDate(result.entries[3].date)).toBe("2024-01-25");
+      expect(toShortIsoDate(result.entries[10].date)).toBe("2024-01-25");
+      expect(toShortIsoDate(result.entries[17].date)).toBe("2024-01-25");
+      expect(toShortIsoDate(result.entries[24].date)).toBe("2024-01-25");
 
-      expect(toShortIsoDate(result[4].date)).toBe("2024-01-26");
-      expect(toShortIsoDate(result[11].date)).toBe("2024-01-26");
-      expect(toShortIsoDate(result[18].date)).toBe("2024-01-26");
-      expect(toShortIsoDate(result[25].date)).toBe("2024-01-26");
+      expect(toShortIsoDate(result.entries[4].date)).toBe("2024-01-26");
+      expect(toShortIsoDate(result.entries[11].date)).toBe("2024-01-26");
+      expect(toShortIsoDate(result.entries[18].date)).toBe("2024-01-26");
+      expect(toShortIsoDate(result.entries[25].date)).toBe("2024-01-26");
 
-      expect(toShortIsoDate(result[5].date)).toBe("2024-01-27");
-      expect(toShortIsoDate(result[12].date)).toBe("2024-01-27");
-      expect(toShortIsoDate(result[19].date)).toBe("2024-01-27");
-      expect(toShortIsoDate(result[26].date)).toBe("2024-01-27");
+      expect(toShortIsoDate(result.entries[5].date)).toBe("2024-01-27");
+      expect(toShortIsoDate(result.entries[12].date)).toBe("2024-01-27");
+      expect(toShortIsoDate(result.entries[19].date)).toBe("2024-01-27");
+      expect(toShortIsoDate(result.entries[26].date)).toBe("2024-01-27");
 
-      expect(toShortIsoDate(result[6].date)).toBe("2024-01-28");
-      expect(toShortIsoDate(result[13].date)).toBe("2024-01-28");
-      expect(toShortIsoDate(result[20].date)).toBe("2024-01-28");
-      expect(toShortIsoDate(result[27].date)).toBe("2024-01-28");
+      expect(toShortIsoDate(result.entries[6].date)).toBe("2024-01-28");
+      expect(toShortIsoDate(result.entries[13].date)).toBe("2024-01-28");
+      expect(toShortIsoDate(result.entries[20].date)).toBe("2024-01-28");
+      expect(toShortIsoDate(result.entries[27].date)).toBe("2024-01-28");
     });
 
     test("average workweek scenario should be mapped correctly", () => {
       const result = mapToTimeTableEntries(
         getTestDateRange(),
-        getTestTagToCategoryMappings(),
+        getTestCategories(),
         getAverageWorkweekEntries(),
       );
 
-      expect(result.length).toBe(28);
+      expect(result.entries.length).toBe(28);
+      expect(result.unmappedEntries.length).toBe(0);
 
       expectToHaveTimeTableEntriesForProjectWeekDays(
         "Development",
-        result,
+        result.entries,
         [480, 480, 420, 0, 480, 0, 0],
       );
 
       expectToHaveTimeTableEntriesForProjectWeekDays(
         "Presentation",
-        result,
+        result.entries,
         [0, 0, 60, 0, 0, 0, 0],
       );
 
       expectToHaveTimeTableEntriesForProjectWeekDays(
         "National holiday",
-        result,
+        result.entries,
         [0, 0, 0, 480, 0, 0, 0],
       );
 
       expectToHaveTimeTableEntriesForProjectWeekDays(
         "Vacation",
-        result,
+        result.entries,
         [0, 0, 0, 0, 0, 0, 0],
+      );
+    });
+
+    test("average workweek scenario with unmapped entries should be mapped correctly", () => {
+      // Remove the categories National holiday and Presentation
+      const testCategories = getTestCategories().slice(0, 2);
+
+      const result = mapToTimeTableEntries(
+        getTestDateRange(),
+        testCategories,
+        getAverageWorkweekEntries(),
+      );
+
+      //                  | Monday | Tuesday | Wednesday | Thursday | Friday
+      // Development      | 8h     | 8h      | 7h        | -        | 8h
+      // Presentation     | -      | -       | 1h        | -        | -
+      // National holiday | -      | -       | -         | 8h       | -
+      expect(result.entries.length).toBe(14);
+      expect(result.unmappedEntries.length).toBe(7);
+
+      expectToHaveTimeTableEntriesForProjectWeekDays(
+        "Development",
+        result.entries,
+        [480, 480, 420, 0, 480, 0, 0],
+      );
+
+      expectToHaveTimeTableEntriesForProjectWeekDays(
+        "Vacation",
+        result.entries,
+        [0, 0, 0, 0, 0, 0, 0],
+      );
+
+      expectToHaveTimeTableEntriesForProjectWeekDays(
+        "Unmapped",
+        result.unmappedEntries,
+        [0, 0, 60, 480, 0, 0, 0],
       );
     });
 
     test("partial average workweek scenario should be mapped correctly", () => {
       const result = mapToTimeTableEntries(
         getTestDateRange(),
-        getTestTagToCategoryMappings(),
+        getTestCategories(),
         // Only include monday until wednesday
         getAverageWorkweekEntries().filter((e) => e.date < "2024-01-25"),
       );
 
-      expect(result.length).toBe(28);
+      expect(result.entries.length).toBe(28);
+      expect(result.unmappedEntries.length).toBe(0);
 
       expectToHaveTimeTableEntriesForProjectWeekDays(
         "Development",
-        result,
+        result.entries,
         [480, 480, 420, 0, 0, 0, 0],
       );
 
       expectToHaveTimeTableEntriesForProjectWeekDays(
         "Presentation",
-        result,
+        result.entries,
         [0, 0, 60, 0, 0, 0, 0],
       );
 
       expectToHaveTimeTableEntriesForProjectWeekDays(
         "National holiday",
-        result,
+        result.entries,
         [0, 0, 0, 0, 0, 0, 0],
       );
 
       expectToHaveTimeTableEntriesForProjectWeekDays(
         "Vacation",
-        result,
+        result.entries,
         [0, 0, 0, 0, 0, 0, 0],
       );
     });
@@ -318,33 +357,34 @@ describe("transformer", () => {
     test("vacation scenario should be mapped correctly", () => {
       const result = mapToTimeTableEntries(
         getTestDateRange(),
-        getTestTagToCategoryMappings(),
+        getTestCategories(),
         getVacationWeekEntries(),
       );
 
-      expect(result.length).toBe(28);
+      expect(result.entries.length).toBe(28);
+      expect(result.unmappedEntries.length).toBe(0);
 
       expectToHaveTimeTableEntriesForProjectWeekDays(
         "Development",
-        result,
+        result.entries,
         [0, 0, 0, 0, 0, 0, 0],
       );
 
       expectToHaveTimeTableEntriesForProjectWeekDays(
         "Presentation",
-        result,
+        result.entries,
         [0, 0, 0, 0, 0, 0, 0],
       );
 
       expectToHaveTimeTableEntriesForProjectWeekDays(
         "National holiday",
-        result,
+        result.entries,
         [0, 0, 0, 0, 0, 0, 0],
       );
 
       expectToHaveTimeTableEntriesForProjectWeekDays(
         "Vacation",
-        result,
+        result.entries,
         [480, 480, 480, 480, 480, 0, 0],
       );
     });
@@ -352,7 +392,7 @@ describe("transformer", () => {
     test("ignores unmapped entries", () => {
       const result = mapToTimeTableEntries(
         getTestDateRange(),
-        getTestTagToCategoryMappings(),
+        getTestCategories(),
         [
           {
             id: 5001,
@@ -416,29 +456,30 @@ describe("transformer", () => {
         ],
       );
 
-      expect(result.length).toBe(28);
+      expect(result.entries.length).toBe(28);
+      expect(result.unmappedEntries.length).toBeGreaterThan(0);
 
       expectToHaveTimeTableEntriesForProjectWeekDays(
         "Development",
-        result,
+        result.entries,
         [0, 0, 0, 0, 0, 0, 0],
       );
 
       expectToHaveTimeTableEntriesForProjectWeekDays(
         "Presentation",
-        result,
+        result.entries,
         [0, 0, 0, 0, 0, 0, 0],
       );
 
       expectToHaveTimeTableEntriesForProjectWeekDays(
         "National holiday",
-        result,
+        result.entries,
         [0, 0, 0, 0, 0, 0, 0],
       );
 
       expectToHaveTimeTableEntriesForProjectWeekDays(
         "Vacation",
-        result,
+        result.entries,
         [0, 0, 0, 0, 0, 0, 0],
       );
     });
@@ -484,7 +525,7 @@ describe("transformer", () => {
   // tests pass as it is used to create scenarios as input for these tests
   describe("getNokoCallsForDelta", () => {
     test("empty workweek to complete workweek should produce expected delta", () => {
-      const categoryMapping = getTestTagToCategoryMappings();
+      const categoryMapping = getTestCategories();
       const entries = getAverageWorkweekEntries();
 
       // The complete average workweek scenario
@@ -494,7 +535,7 @@ describe("transformer", () => {
         entries,
       );
 
-      const result = getNokoCallsForDelta(input, []);
+      const result = getNokoCallsForDelta(input.entries, []);
 
       expect(result.creates.length).toBe(6);
       expect(result.idsToDelete.length).toBe(0);
@@ -538,7 +579,7 @@ describe("transformer", () => {
     });
 
     test("partial workweek to complete workweek should produce expected delta", () => {
-      const categoryMapping = getTestTagToCategoryMappings();
+      const categoryMapping = getTestCategories();
       const entries = getAverageWorkweekEntries();
 
       // The complete average workweek scenario
@@ -549,7 +590,7 @@ describe("transformer", () => {
       );
 
       const result = getNokoCallsForDelta(
-        input,
+        input.entries,
         // Only include monday until wednesday
         entries.filter((e) => e.date < "2024-01-25"),
       );
@@ -572,7 +613,7 @@ describe("transformer", () => {
     });
 
     test("overwrite complete workweek with vacation should produce expected delta", () => {
-      const categoryMapping = getTestTagToCategoryMappings();
+      const categoryMapping = getTestCategories();
 
       // The complete average workweek scenario
       const input = mapToTimeTableEntries(
@@ -581,7 +622,10 @@ describe("transformer", () => {
         getVacationWeekEntries(),
       );
 
-      const result = getNokoCallsForDelta(input, getAverageWorkweekEntries());
+      const result = getNokoCallsForDelta(
+        input.entries,
+        getAverageWorkweekEntries(),
+      );
 
       expect(result.idsToDelete.length).toBe(6);
       expect(result.idsToDelete).toContain(5001);
@@ -625,7 +669,7 @@ describe("transformer", () => {
     });
 
     test("update workweek to complete workweek should produce expected delta", () => {
-      const categoryMapping = getTestTagToCategoryMappings();
+      const categoryMapping = getTestCategories();
 
       const input = mapToTimeTableEntries(
         getTestDateRange(),
@@ -634,7 +678,7 @@ describe("transformer", () => {
       );
 
       const result = getNokoCallsForDelta(
-        input,
+        input.entries,
         // All average workweek devlopment entry minutes halved scenario
         getAverageWorkweekEntries().map((e) => {
           if (e.description === "#Development") {
@@ -678,7 +722,7 @@ describe("transformer", () => {
     });
 
     test("ignores readonly categories", () => {
-      const categoryMapping = getTestTagToCategoryMappings();
+      const categoryMapping = getTestCategories();
       categoryMapping[2].readonly = true;
       categoryMapping[3].readonly = true;
       const entries = getAverageWorkweekEntries();
@@ -690,7 +734,7 @@ describe("transformer", () => {
         entries,
       );
 
-      const result = getNokoCallsForDelta(input, []);
+      const result = getNokoCallsForDelta(input.entries, []);
 
       expect(result.creates.length).toBe(4);
       expect(result.idsToDelete.length).toBe(0);
@@ -722,7 +766,7 @@ describe("transformer", () => {
     });
 
     test("ignores categories without a project ID or Noko tags", () => {
-      const categoryMapping = getTestTagToCategoryMappings();
+      const categoryMapping = getTestCategories();
       categoryMapping[2].readonly = true;
       categoryMapping[3].readonly = true;
       const entries = getAverageWorkweekEntries();
@@ -733,7 +777,7 @@ describe("transformer", () => {
         categoryMapping,
         entries,
       );
-      input.forEach((entry) => {
+      input.entries.forEach((entry) => {
         if (entry.category.name === categoryMapping[2].name) {
           entry.category.projectId = undefined;
         } else if (entry.category.name === categoryMapping[3].name) {
@@ -741,7 +785,7 @@ describe("transformer", () => {
         }
       });
 
-      const result = getNokoCallsForDelta(input, []);
+      const result = getNokoCallsForDelta(input.entries, []);
 
       expect(result.creates.length).toBe(4);
       expect(result.idsToDelete.length).toBe(0);
@@ -936,7 +980,7 @@ function getTestDateRange(): DateRange {
   };
 }
 
-function getTestTagToCategoryMappings(): Category[] {
+function getTestCategories(): Category[] {
   return [
     {
       order: 1,
