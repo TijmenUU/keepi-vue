@@ -83,6 +83,40 @@ const isEditorValid = computed<boolean>(() => {
   return toAdd.name != "" && toAdd.projectId != "" && toAdd.nokoTags.length > 0;
 });
 
+const hasUnsavedProjectChanges = computed<boolean>(() => {
+  const storedCategories = applicationStore.categories;
+  if (values.length != storedCategories.length) {
+    return true;
+  }
+
+  for (let i = 0; i < storedCategories.length; ++i) {
+    const category = storedCategories[0];
+    const value = values[0];
+    if (
+      category.name != value.name ||
+      category.nokoTags.join() != value.nokoTags.join() ||
+      category.order.toString() != value.order ||
+      category.projectId != value.projectId ||
+      category.readonly != value.readonly
+    ) {
+      return true;
+    }
+  }
+
+  return false;
+});
+
+const submitButtonTitle = computed<string | null>(() => {
+  if (hasNonEmptyEditor.value) {
+    return "Er zijn nog niet opgeslagen wijzigingen in de nieuw toe te voegen regel";
+  }
+  if (!hasUnsavedProjectChanges.value) {
+    return "Er zijn geen openstaande wijzigingen";
+  }
+
+  return null;
+});
+
 const onAddTag = (tag: string) => {
   if (tag != null && tag.length > 0 && !toAdd.nokoTags.some((t) => t === tag)) {
     toAdd.nokoTags.push(tag);
@@ -344,10 +378,13 @@ const onSubmit = async () => {
         <KeepiButton
           @click="onSubmit"
           variant="green"
-          :disabled="isSubmitting || values.length < 1 || hasNonEmptyEditor"
-          :title="
-            hasNonEmptyEditor ? 'Er zijn nog onopgeslagen wijzigingen' : ''
+          :disabled="
+            isSubmitting ||
+            values.length < 1 ||
+            hasNonEmptyEditor ||
+            !hasUnsavedProjectChanges
           "
+          :title="submitButtonTitle"
         >
           Opslaan
         </KeepiButton>
