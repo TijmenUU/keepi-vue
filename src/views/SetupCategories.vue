@@ -49,7 +49,11 @@ const values: CategoryEntry[] = reactive(
 );
 
 const getProjectName = (id: number): string => {
-  return projects.find((p) => p.id === id)?.name ?? "Onbekend";
+  const name = projects.find((p) => p.id === id)?.name ?? "Onbekend";
+  if (name.length > 9) {
+    return `${name.substring(0, 8)}...`;
+  }
+  return name;
 };
 
 const onDeleteValue = (id: number): void => {
@@ -200,7 +204,9 @@ const onSubmit = async () => {
               <td>
                 <KeepiInput v-model="value.name" />
               </td>
-              <td>{{ getProjectName(value.projectId) }}</td>
+              <td>
+                {{ getProjectName(value.projectId) }}
+              </td>
               <td>{{ value.nokoTags.join(", ") }}</td>
               <td>
                 <KeepiCheckbox v-model="value.readonly" type="checkbox" />
@@ -268,7 +274,7 @@ const onSubmit = async () => {
             </td>
             <td class="align-top">
               <select
-                class="rounded border border-gray-600 bg-transparent px-1"
+                class="max-w-44 rounded border border-gray-600 bg-transparent px-1"
                 v-model="toAdd.projectId"
               >
                 <option
