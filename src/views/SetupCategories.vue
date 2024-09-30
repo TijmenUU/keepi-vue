@@ -22,18 +22,27 @@ type CategoryEntry = {
 const router = useRouter();
 const applicationStore = useApplicationStore();
 
-const projects = (await applicationStore.getCachedNokoProjects(false))
-  .filter(
-    (p) =>
-      p.enabled &&
-      p.participants.some((p) => p.id === applicationStore.nokoUser?.id),
-  )
-  .map((p) => ({ id: p.id, name: p.name }));
-const tags = (await applicationStore.getCachedNokoTags(false)).map(
-  (t) => t.formatted_name,
-);
+const loadProjects = async (refreshCache: boolean) => {
+  return (await applicationStore.getCachedNokoProjects(refreshCache))
+    .filter(
+      (p) =>
+        p.enabled &&
+        p.participants.some((p) => p.id === applicationStore.nokoUser?.id),
+    )
+    .map((p) => ({ id: p.id, name: p.name }));
+};
+
+const loadTags = async (refreshCache: boolean) => {
+  return (await applicationStore.getCachedNokoTags(refreshCache)).map(
+    (t) => t.formatted_name,
+  );
+};
+
+const projects = ref(await loadProjects(false));
+const tags = ref(await loadTags(false));
 
 const isSubmitting = ref(false);
+const isRefetching = ref(false);
 
 const ignoreUnsavedChanges = ref(false);
 const pendingNavigationChange = ref<RouteLocationNormalizedGeneric | null>(
@@ -59,7 +68,7 @@ const values: CategoryEntry[] = reactive(
 );
 
 const getProjectName = (id: number): string => {
-  const name = projects.find((p) => p.id === id)?.name ?? "Onbekend";
+  const name = projects.value.find((p) => p.id === id)?.name ?? "Onbekend";
   if (name.length > 9) {
     return `${name.substring(0, 8)}...`;
   }
@@ -78,7 +87,9 @@ const filteredTags = computed<string[]>(() => {
     return [];
   }
   const sanitizedInput = toAdd.tagSearch.toLowerCase().trim();
-  const hits = tags.filter((t) => t.toLowerCase().includes(sanitizedInput));
+  const hits = tags.value.filter((t) =>
+    t.toLowerCase().includes(sanitizedInput),
+  );
   if (hits.length > 5) {
     return hits.slice(0, 5);
   }
@@ -123,6 +134,9 @@ const submitButtonTitle = computed<string | null>(() => {
   if (!hasUnsavedProjectChanges.value) {
     return "Er zijn geen openstaande wijzigingen";
   }
+  if (isRefetching.value) {
+    return "De Noko projecten en tags worden ververst";
+  }
 
   return null;
 });
@@ -148,12 +162,12 @@ const onAddCategory = () => {
   if (
     projectId == null ||
     isNaN(projectId) ||
-    !projects.some((p) => p.id === projectId)
+    !projects.value.some((p) => p.id === projectId)
   ) {
     return;
   }
 
-  if (tags.length === 0) {
+  if (tags.value.length === 0) {
     return;
   }
 
@@ -250,6 +264,20 @@ const getRandomModalTitle = () => {
   ];
   return choices[Math.floor(Math.random() * choices.length)];
 };
+
+const onRefetchNokoProjectsAndTags = async () => {
+  if (isRefetching.value) {
+    return;
+  }
+
+  isRefetching.value = true;
+  try {
+    projects.value = await loadProjects(true);
+    tags.value = await loadTags(true);
+  } finally {
+    isRefetching.value = false;
+  }
+};
 </script>
 
 <template>
@@ -258,7 +286,7 @@ const getRandomModalTitle = () => {
       <div>
         <table
           class="mt-3 table-auto text-center"
-          :class="{ 'blur-sm': isSubmitting }"
+          :class="{ 'blur-sm': isSubmitting || isRefetching }"
         >
           <thead>
             <tr>
@@ -422,12 +450,21 @@ const getRandomModalTitle = () => {
         </table>
       </div>
 
-      <div class="w-full text-end">
+      <div class="mt-3 flex w-full justify-end gap-3">
+        <KeepiButton
+          @click="onRefetchNokoProjectsAndTags"
+          variant="blue"
+          :disabled="isRefetching"
+        >
+          Ververs projecten & tags
+        </KeepiButton>
+
         <KeepiButton
           @click="onSubmit"
           variant="green"
           :disabled="
             isSubmitting ||
+            isRefetching ||
             values.length < 1 ||
             hasNonEmptyEditor ||
             !hasUnsavedProjectChanges
