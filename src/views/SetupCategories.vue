@@ -216,6 +216,7 @@ const onSubmit = async () => {
           class="mt-3 table-auto text-center"
           :class="{ 'blur-sm': isSubmitting }"
         >
+          <thead>
           <tr>
             <th>Volgorde</th>
             <th>Naam</th>
@@ -224,7 +225,9 @@ const onSubmit = async () => {
             <th>Readonly</th>
             <th></th>
           </tr>
+          </thead>
 
+          <tbody>
           <template v-if="values.length > 0">
             <tr v-for="value in values" :key="value.id">
               <td>
@@ -371,6 +374,7 @@ const onSubmit = async () => {
               >
             </td>
           </tr>
+          </tbody>
         </table>
       </div>
 
