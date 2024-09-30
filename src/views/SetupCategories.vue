@@ -17,16 +17,17 @@ type CategoryEntry = {
 
 const router = useRouter();
 const applicationStore = useApplicationStore();
-const nokoClient = applicationStore.getNokoClient();
 
-const projects = (await nokoClient.getProjects())
+const projects = (await applicationStore.getCachedNokoProjects(false))
   .filter(
     (p) =>
       p.enabled &&
       p.participants.some((p) => p.id === applicationStore.nokoUser?.id),
   )
   .map((p) => ({ id: p.id, name: p.name }));
-const tags = (await nokoClient.getTags()).map((t) => t.formatted_name);
+const tags = (await applicationStore.getCachedNokoTags(false)).map(
+  (t) => t.formatted_name,
+);
 
 const isSubmitting = ref(false);
 const toAdd = reactive({
