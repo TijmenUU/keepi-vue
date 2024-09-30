@@ -1,9 +1,12 @@
 import NokoClient from "@/noko-client";
+import { INokoGetProjectResponse, INokoGetTagResponse } from "@/responses";
 import { Category } from "@/types";
 import { defineStore } from "pinia";
 
 const apiKeyLocalStorageKey = "noko-api-key";
 const categoriesLocalStorageKey = "categories";
+const nokoTagCacheStorageKey = "noko-tags";
+const nokoProjectCacheStorageKey = "noko-projects";
 let cachedNokoClient: NokoClient | null = null;
 
 interface IState {
@@ -105,6 +108,55 @@ export const useApplicationStore = defineStore("application", {
       localStorage.setItem(apiKeyLocalStorageKey, this.apiKey);
       return true;
     },
+    async getCachedNokoTags(
+      refreshCache: boolean,
+    ): Promise<INokoGetTagResponse[]> {
+      try {
+        const cachedJson = localStorage.getItem(nokoTagCacheStorageKey);
+        if (
+          !refreshCache &&
+          cachedJson != null &&
+          typeof cachedJson === "string"
+        ) {
+          return tryParseStoredNokoTags(cachedJson);
+        }
+
+        const nokoTags = await this.getNokoClient().getTags();
+        localStorage.setItem(nokoTagCacheStorageKey, JSON.stringify(nokoTags));
+
+        return nokoTags;
+      } catch (error) {
+        console.error(error);
+        localStorage.removeItem(nokoTagCacheStorageKey);
+        return [];
+      }
+    },
+    async getCachedNokoProjects(
+      refreshCache: boolean,
+    ): Promise<INokoGetProjectResponse[]> {
+      try {
+        const cachedJson = localStorage.getItem(nokoProjectCacheStorageKey);
+        if (
+          !refreshCache &&
+          cachedJson != null &&
+          typeof cachedJson === "string"
+        ) {
+          return tryParseStoredNokoProjects(cachedJson);
+        }
+
+        const nokoProjects = await this.getNokoClient().getProjects();
+        localStorage.setItem(
+          nokoProjectCacheStorageKey,
+          JSON.stringify(nokoProjects),
+        );
+
+        return nokoProjects;
+      } catch (error) {
+        console.error(error);
+        localStorage.removeItem(nokoProjectCacheStorageKey);
+        return [];
+      }
+    },
   },
 });
 
@@ -188,4 +240,79 @@ function categoryCompareFn(a: Category, b: Category): number {
     return -1;
   }
   return a.order - b.order;
+}
+
+function tryParseStoredNokoTags(json: string): INokoGetTagResponse[] {
+  const array = JSON.parse(json);
+  if (array == null || !Array.isArray(array)) {
+    return [];
+  }
+
+  const results: INokoGetTagResponse[] = [];
+  for (let i = 0; i < array.length; ++i) {
+    const candidate = array[i];
+    if (
+      candidate != null &&
+      typeof candidate === "object" &&
+      "id" in candidate &&
+      typeof candidate.id === "number" &&
+      "name" in candidate &&
+      typeof candidate.name === "string" &&
+      "formatted_name" in candidate &&
+      typeof candidate.formatted_name === "string"
+    ) {
+      results.push({
+        id: candidate.id,
+        name: candidate.name,
+        formatted_name: candidate.formatted_name,
+      });
+    } else {
+      console.debug("Cached Noko tag is not valid", candidate);
+    }
+  }
+
+  return results;
+}
+
+function tryParseStoredNokoProjects(json: string): INokoGetProjectResponse[] {
+  const array = JSON.parse(json);
+  if (array == null || !Array.isArray(array)) {
+    return [];
+  }
+
+  const results: INokoGetProjectResponse[] = [];
+  for (let i = 0; i < array.length; ++i) {
+    const candidate = array[i];
+    if (
+      candidate != null &&
+      typeof candidate === "object" &&
+      "id" in candidate &&
+      typeof candidate.id === "number" &&
+      "name" in candidate &&
+      typeof candidate.name === "string" &&
+      "enabled" in candidate &&
+      typeof candidate.enabled === "boolean" &&
+      "participants" in candidate &&
+      Array.isArray(candidate.participants) &&
+      (candidate.participants as unknown[]).length > 0 &&
+      (candidate.participants as unknown[]).every(
+        (e) =>
+          e != null &&
+          typeof e === "object" &&
+          "id" in e &&
+          typeof e.id === "number",
+      )
+    ) {
+      results.push({
+        id: candidate.id,
+        name: candidate.name,
+        enabled: candidate.enabled,
+        participants: candidate.participants,
+      });
+    } else {
+      console.debug("Stored tag to category mapping is not valid", candidate);
+    }
+  }
+
+  return results;
 }

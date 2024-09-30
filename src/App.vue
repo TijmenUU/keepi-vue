@@ -7,8 +7,6 @@ import { onMounted } from "vue";
 const store = useApplicationStore();
 
 onMounted(async () => {
-  await store.hydrate();
-
   if (store.requiresSetup) {
     await router.push("/setup");
   } else if (store.requiresCategories) {
@@ -25,7 +23,9 @@ onMounted(async () => {
   <RouterView v-slot="{ Component }">
     <Transition name="fade" mode="out-in" appear>
       <Suspense timeout="0">
-        <component :is="Component"></component>
+        <template v-if="Component">
+          <component :is="Component"></component>
+        </template>
 
         <template #fallback>
           <div class="flex flex-grow flex-col items-center justify-center">
