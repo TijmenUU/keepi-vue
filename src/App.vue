@@ -7,8 +7,6 @@ import { onMounted } from "vue";
 const store = useApplicationStore();
 
 onMounted(async () => {
-  await store.hydrate();
-
   if (store.requiresSetup) {
     await router.push("/setup");
   } else if (store.requiresCategories) {
