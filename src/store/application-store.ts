@@ -289,14 +289,12 @@ function tryParseStoredNokoProjects(json: string): INokoGetProjectResponse[] {
       "id" in candidate &&
       typeof candidate.id === "number" &&
       "name" in candidate &&
-      typeof candidate.name === "string" &&
-      "enabled" in candidate &&
-      typeof candidate.enabled === "boolean"
+      typeof candidate.name === "string"
     ) {
       results.push({
         id: candidate.id,
         name: candidate.name,
-        enabled: candidate.enabled
+        enabled: true
       });
     } else {
       console.debug("Stored tag to category mapping is not valid", candidate);
