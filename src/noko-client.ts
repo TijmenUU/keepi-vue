@@ -96,7 +96,7 @@ export default class NokoClient {
     return await response.json();
   }
 
-  public async getProjects(): Promise<INokoGetProjectResponse[]> {
+  public async getEnabledProjects(): Promise<INokoGetProjectResponse[]> {
     const options = this.getBaseRequestOptions();
     options.method = "GET";
 

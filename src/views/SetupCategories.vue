@@ -23,13 +23,9 @@ const router = useRouter();
 const applicationStore = useApplicationStore();
 
 const loadProjects = async (refreshCache: boolean) => {
-  return (await applicationStore.getCachedNokoProjects(refreshCache))
-    .filter(
-      (p) =>
-        p.enabled &&
-        p.participants.some((p) => p.id === applicationStore.nokoUser?.id),
-    )
-    .map((p) => ({ id: p.id, name: p.name }));
+  return (await applicationStore.getCachedNokoProjects(refreshCache)).map(
+    (p) => ({ id: p.id, name: p.name }),
+  );
 };
 
 const loadTags = async (refreshCache: boolean) => {

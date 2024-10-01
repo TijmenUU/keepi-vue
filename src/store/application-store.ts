@@ -144,7 +144,7 @@ export const useApplicationStore = defineStore("application", {
           return tryParseStoredNokoProjects(cachedJson);
         }
 
-        const nokoProjects = await this.getNokoClient().getProjects();
+        const nokoProjects = await this.getNokoClient().getEnabledProjects();
         localStorage.setItem(
           nokoProjectCacheStorageKey,
           JSON.stringify(nokoProjects),
@@ -289,25 +289,12 @@ function tryParseStoredNokoProjects(json: string): INokoGetProjectResponse[] {
       "id" in candidate &&
       typeof candidate.id === "number" &&
       "name" in candidate &&
-      typeof candidate.name === "string" &&
-      "enabled" in candidate &&
-      typeof candidate.enabled === "boolean" &&
-      "participants" in candidate &&
-      Array.isArray(candidate.participants) &&
-      (candidate.participants as unknown[]).length > 0 &&
-      (candidate.participants as unknown[]).every(
-        (e) =>
-          e != null &&
-          typeof e === "object" &&
-          "id" in e &&
-          typeof e.id === "number",
-      )
+      typeof candidate.name === "string"
     ) {
       results.push({
         id: candidate.id,
         name: candidate.name,
-        enabled: candidate.enabled,
-        participants: candidate.participants,
+        enabled: true
       });
     } else {
       console.debug("Stored tag to category mapping is not valid", candidate);
