@@ -24,11 +24,7 @@ const applicationStore = useApplicationStore();
 
 const loadProjects = async (refreshCache: boolean) => {
   return (await applicationStore.getCachedNokoProjects(refreshCache))
-    .filter(
-      (p) =>
-        p.enabled &&
-        p.participants.some((p) => p.id === applicationStore.nokoUser?.id),
-    )
+    .filter((p) => p.enabled)
     .map((p) => ({ id: p.id, name: p.name }));
 };
 

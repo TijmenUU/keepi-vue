@@ -249,7 +249,6 @@ export interface INokoGetProjectResponse {
   id: number;
   name: string;
   enabled: boolean;
-  participants: { id: number }[];
 }
 
 // See https://developer.nokotime.com/v2/current_user/
