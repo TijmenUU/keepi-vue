@@ -63,7 +63,7 @@ const validationMessage = computed<string>(() => {
     close-delay="100"
   >
     <input
-      class="rounded border-b bg-gray-800 text-center ring-gray-400 focus:outline-none focus:ring-2"
+      class="rounded border-b bg-gray-800 ring-gray-400 focus:outline-none focus:ring-2"
       :class="{
         'border-gray-600': !validationMessage,
         'border-red-600': validationMessage,

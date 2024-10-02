@@ -3,7 +3,8 @@ import KeepiButton from "@/components/KeepiButton.vue";
 import KeepiCheckbox from "@/components/KeepiCheckbox.vue";
 import KeepiInput from "@/components/KeepiInput.vue";
 import { useApplicationStore } from "@/store/application-store";
-import { computed, reactive, ref } from "vue";
+import { createSwapy } from "swapy";
+import { computed, onMounted, reactive, ref, useTemplateRef } from "vue";
 import {
   onBeforeRouteLeave,
   RouteLocationNormalizedGeneric,
@@ -12,7 +13,6 @@ import {
 
 type CategoryEntry = {
   id: number;
-  order: string;
   readonly: boolean;
   projectId: number;
   nokoTags: string[];
@@ -56,19 +56,30 @@ const values: CategoryEntry[] = reactive(
   applicationStore.categories.map((c, index) => ({
     id: nextCategoryId++,
     readonly: c.readonly,
-    order: index.toString(),
+    order: index + 1,
     projectId: c.projectId,
     nokoTags: c.nokoTags.slice(),
     name: c.name,
   })),
 );
 
-const getProjectName = (id: number): string => {
-  const name = projects.value.find((p) => p.id === id)?.name ?? "Onbekend";
-  if (name.length > 9) {
-    return `${name.substring(0, 8)}...`;
+const swapyReportedOrder = ref<number[]>([]);
+const swapyContainer = useTemplateRef("container");
+
+onMounted(() => {
+  if (swapyContainer.value != null) {
+    const swapy = createSwapy(swapyContainer.value);
+    swapy.onSwap((event) => {
+      swapyReportedOrder.value = event.data.array
+        .map((i) => i.itemId)
+        .filter((i) => i != null)
+        .map((i) => parseInt(i));
+    });
   }
-  return name;
+});
+
+const getProjectName = (id: number): string => {
+  return projects.value.find((p) => p.id === id)?.name ?? "Onbekend";
 };
 
 const onDeleteValue = (id: number): void => {
@@ -83,8 +94,9 @@ const filteredTags = computed<string[]>(() => {
     return [];
   }
   const sanitizedInput = toAdd.tagSearch.toLowerCase().trim();
-  const hits = tags.value.filter((t) =>
-    t.toLowerCase().includes(sanitizedInput),
+  const hits = tags.value.filter(
+    (t) =>
+      t.toLowerCase().includes(sanitizedInput) && !toAdd.nokoTags.includes(t),
   );
   if (hits.length > 5) {
     return hits.slice(0, 5);
@@ -112,7 +124,7 @@ const hasUnsavedProjectChanges = computed<boolean>(() => {
     if (
       category.name != value.name ||
       category.nokoTags.join() != value.nokoTags.join() ||
-      category.order.toString() != value.order ||
+      swapyReportedOrder.value.length > 0 ||
       category.projectId != value.projectId ||
       category.readonly != value.readonly
     ) {
@@ -170,7 +182,6 @@ const onAddCategory = () => {
   values.push({
     id: nextCategoryId++,
     readonly: false,
-    order: values.length.toString(),
     projectId,
     nokoTags: toAdd.nokoTags,
     name: toAdd.name,
@@ -199,26 +210,26 @@ const onSubmit = async () => {
     }
     if (
       values.some((v1) =>
-        values.some((v2) => v1.order == v2.order && v1.id !== v2.id),
-      )
-    ) {
-      return;
-    }
-    if (
-      values.some((v1) =>
         values.some((v2) => v1.name == v2.name && v1.id !== v2.id),
       )
     ) {
       return;
     }
 
-    applicationStore.categories = values.map((v) => ({
-      order: parseInt(v.order),
-      readonly: v.readonly,
-      projectId: v.projectId,
-      nokoTags: v.nokoTags,
-      name: v.name,
-    }));
+    applicationStore.categories = values.map((v, index) => {
+      let reportedOrder = swapyReportedOrder.value.findIndex((i) => i === v.id);
+      if (reportedOrder < 0) {
+        reportedOrder = index;
+      }
+
+      return {
+        order: reportedOrder,
+        readonly: v.readonly,
+        projectId: v.projectId,
+        nokoTags: v.nokoTags,
+        name: v.name,
+      };
+    });
     applicationStore.peristCategories();
 
     await router.push("/");
@@ -228,7 +239,7 @@ const onSubmit = async () => {
 };
 
 onBeforeRouteLeave((to, _) => {
-  if (ignoreUnsavedChanges.value) {
+  if (isSubmitting.value || ignoreUnsavedChanges.value) {
     return true;
   }
   if (hasNonEmptyEditor.value || hasUnsavedProjectChanges.value) {
@@ -277,199 +288,168 @@ const onRefetchNokoProjectsAndTags = async () => {
 </script>
 
 <template>
-  <div class="mx-auto flex flex-col items-center py-3 lg:container">
+  <div
+    class="container mx-auto flex max-w-screen-lg flex-col items-center px-2 py-3"
+  >
     <div>
-      <div>
-        <table
-          class="mt-3 table-auto text-center"
-          :class="{ 'blur-sm': isSubmitting || isRefetching }"
+      <div
+        class="flex flex-col items-center gap-2"
+        :class="{ 'blur-sm': isSubmitting || isRefetching }"
+        ref="container"
+      >
+        <div
+          class="grid w-full grid-cols-[3fr_3fr_3fr_1fr_1fr] gap-2 px-2 font-bold"
         >
-          <thead>
-            <tr>
-              <th>Volgorde</th>
-              <th>Naam</th>
-              <th>Project</th>
-              <th>Tags</th>
-              <th>Readonly</th>
-              <th></th>
-            </tr>
-          </thead>
+          <div>Naam</div>
+          <div>Project</div>
+          <div>Tags</div>
+          <div>Readonly</div>
+          <div></div>
+        </div>
 
-          <tbody>
-            <template v-if="values.length > 0">
-              <tr v-for="value in values" :key="value.id">
-                <td>
-                  <KeepiInput
-                    style="width: 40px"
-                    v-model="value.order"
-                    type="text"
-                    inputmode="numeric"
+        <div
+          v-for="(value, index) in values"
+          :key="value.id"
+          :data-swapy-slot="index"
+          class="flex w-full flex-col rounded-md bg-gray-700"
+        >
+          <div
+            class="grid w-full cursor-move grid-cols-[3fr_3fr_3fr_1fr_1fr] gap-2 rounded-md border border-gray-600 bg-gray-800 p-3 drop-shadow-md"
+            :data-swapy-item="value.id"
+          >
+            <KeepiInput v-model="value.name" />
+
+            <div
+              class="overflow-hidden text-ellipsis whitespace-nowrap text-nowrap"
+            >
+              {{ getProjectName(value.projectId) }}
+            </div>
+
+            <div class="flex flex-col overflow-x-hidden">
+              <div
+                v-for="tag in value.nokoTags"
+                class="overflow-hidden text-ellipsis whitespace-nowrap text-nowrap"
+              >
+                {{ tag }}
+              </div>
+            </div>
+
+            <KeepiCheckbox v-model="value.readonly" type="checkbox" />
+
+            <div>
+              <button
+                @click="onDeleteValue(value.id)"
+                :disabled="isSubmitting"
+                class="text-red-600 transition-colors duration-200 hover:text-red-400 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke-width="1.5"
+                  stroke="currentColor"
+                  class="h-6 w-6"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
                   />
-                </td>
-                <td>
-                  <KeepiInput v-model="value.name" />
-                </td>
-                <td>
-                  {{ getProjectName(value.projectId) }}
-                </td>
-                <td>{{ value.nokoTags.join(", ") }}</td>
-                <td>
-                  <KeepiCheckbox v-model="value.readonly" type="checkbox" />
-                </td>
-                <td>
-                  <button
-                    @click="onDeleteValue(value.id)"
-                    :disabled="isSubmitting"
-                    class="text-red-600 transition-colors duration-200 hover:text-red-400 disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke-width="1.5"
-                      stroke="currentColor"
-                      class="h-6 w-6"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
-                      />
-                    </svg>
-                  </button>
-                </td>
-              </tr>
-            </template>
-            <template v-else>
-              <tr>
-                <td colspan="99" class="text-gray-400">
-                  Er zijn nog geen categorieën aangemaakt
-                </td>
-              </tr>
-            </template>
-
-            <tr>
-              <td colspan="99" class="h-10"></td>
-            </tr>
-
-            <tr>
-              <td class="align-top">
-                <button
-                  @click="onResetAdd"
-                  class="transition-color text-gray-400 duration-200 hover:text-white"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke-width="1.5"
-                    stroke="currentColor"
-                    class="h-5 w-5"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"
-                    />
-                  </svg>
-                </button>
-              </td>
-              <td class="align-top">
-                <KeepiInput autofocus v-model="toAdd.name" />
-              </td>
-              <td class="align-top">
-                <select
-                  class="max-w-44 rounded border border-gray-600 bg-transparent px-1"
-                  v-model="toAdd.projectId"
-                >
-                  <option
-                    class="bg-gray-300 text-black"
-                    default
-                    disabled
-                    value=""
-                  >
-                    Maak een keuze
-                  </option>
-                  <option
-                    class="bg-gray-300 text-black"
-                    v-for="project in projects"
-                    :key="project.id"
-                    :value="project.id.toString()"
-                  >
-                    {{ project.name }}
-                  </option>
-                </select>
-              </td>
-              <td>
-                <div class="flex flex-col space-y-2">
-                  <span
-                    v-if="toAdd.nokoTags.length > 0"
-                    class="overflow-ellipsis whitespace-nowrap"
-                    >{{ toAdd.nokoTags.join(", ") }}</span
-                  >
-                  <span v-else class="text-gray-400">~</span>
-
-                  <KeepiInput
-                    v-model="toAdd.tagSearch"
-                    name="tagsearch"
-                    placeholder="Zoek op naam..."
-                  />
-                  <div class="flex flex-col space-y-1">
-                    <div
-                      class="flex items-center"
-                      v-for="tag in filteredTags"
-                      :key="tag"
-                    >
-                      <button
-                        class="transition-color text-gray-300 duration-200 hover:text-white"
-                        @click="onAddTag(tag)"
-                      >
-                        <span class="overflow-ellipsis text-sm">{{ tag }}</span>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-                <!-- todo add tag suggestions here -->
-              </td>
-              <td>
-                <!-- Adding readonly tags is not in scope for now -->
-              </td>
-              <td class="align-top">
-                <KeepiButton
-                  @click="onAddCategory()"
-                  :disabled="isSubmitting || !isEditorValid"
-                  >Toevoegen</KeepiButton
-                >
-              </td>
-            </tr>
-          </tbody>
-        </table>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div class="mt-3 flex w-full justify-end gap-3">
-        <KeepiButton
-          @click="onRefetchNokoProjectsAndTags"
-          variant="blue"
-          :disabled="isRefetching"
-        >
-          Ververs projecten & tags
-        </KeepiButton>
+      <div class="mt-2 grid grid-cols-[3fr_3fr_3fr_2fr] gap-2 p-3">
+        <KeepiInput autofocus v-model="toAdd.name" />
 
-        <KeepiButton
-          @click="onSubmit"
-          variant="green"
-          :disabled="
-            isSubmitting ||
-            isRefetching ||
-            values.length < 1 ||
-            hasNonEmptyEditor ||
-            !hasUnsavedProjectChanges
-          "
-          :title="submitButtonTitle"
-        >
-          Opslaan
-        </KeepiButton>
+        <div>
+          <select
+            class="max-w-44 rounded border border-gray-600 bg-transparent px-1"
+            v-model="toAdd.projectId"
+          >
+            <option class="bg-gray-300 text-black" default disabled value="">
+              Maak een keuze
+            </option>
+
+            <option
+              class="bg-gray-300 text-black"
+              v-for="project in projects"
+              :key="project.id"
+              :value="project.id.toString()"
+            >
+              {{ project.name }}
+            </option>
+          </select>
+        </div>
+
+        <div class="flex flex-col space-y-2">
+          <KeepiInput
+            v-model="toAdd.tagSearch"
+            class="w-full"
+            name="tagsearch"
+            placeholder="Zoek op naam..."
+          />
+
+          <div class="flex flex-col space-y-2 overflow-x-hidden">
+            <div v-for="tag in filteredTags" :key="tag" class="ml-2">
+              <button
+                class="transition-color rounded-full bg-green-800 p-1 px-3 text-left text-gray-300 duration-200 hover:bg-green-700 hover:text-white"
+                @click="onAddTag(tag)"
+              >
+                <span
+                  class="overflow-hidden text-ellipsis whitespace-nowrap text-nowrap text-sm text-white"
+                  >{{ tag }}
+                </span>
+              </button>
+            </div>
+          </div>
+
+          <div
+            v-for="tag in toAdd.nokoTags"
+            class="overflow-x-hidden text-ellipsis whitespace-nowrap text-nowrap"
+          >
+            {{ tag }}
+          </div>
+        </div>
+
+        <div>
+          <KeepiButton
+            class="w-full py-0"
+            @click="onAddCategory()"
+            :disabled="isSubmitting || !isEditorValid"
+          >
+            Toevoegen
+          </KeepiButton>
+        </div>
       </div>
+    </div>
+
+    <div class="mt-3 flex w-full justify-end gap-3">
+      <KeepiButton
+        @click="onRefetchNokoProjectsAndTags"
+        variant="blue"
+        :disabled="isRefetching"
+      >
+        Ververs projecten & tags
+      </KeepiButton>
+
+      <KeepiButton
+        @click="onSubmit"
+        variant="green"
+        :disabled="
+          isSubmitting ||
+          isRefetching ||
+          values.length < 1 ||
+          hasNonEmptyEditor ||
+          !hasUnsavedProjectChanges
+        "
+        :title="submitButtonTitle"
+      >
+        Opslaan
+      </KeepiButton>
     </div>
 
     <Transition name="fade" mode="out-in" appear>

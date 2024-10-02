@@ -279,6 +279,7 @@ const onSubmit = async () => {
                   :readonly="category.readonly"
                   :tabindex="category.readonly ? -1 : 0"
                   :input-validation="inputValidationMode"
+                  class="text-center"
                   :class="{ 'text-gray-500': category.readonly }"
                   style="width: 65px"
                   @keyup.up="onKey('up')"
