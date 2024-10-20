@@ -32,6 +32,20 @@ jobs:
         run: |
           bun run test --watch false
 
+      - name: Add build version 📅
+        shell: bash
+        run: |
+          if [ -e '.env.production' ]; then
+            echo "Unexpected .env.production file present. Aborting because it would be overwritten.";
+            exit 1;
+          fi
+
+          BUILDDATE=$(date +%Y-%m-%d)
+          echo "VITE_APPLICATION_BUILD_DATE=$BUILDDATE" > .env.production
+
+          BUILDCOMMIT=$(git rev-parse HEAD)
+          echo "VITE_APPLICATION_BUILD_COMMIT=$BUILDCOMMIT" >> .env.production
+
       - name: Build 🏗️
         shell: bash
         run: |

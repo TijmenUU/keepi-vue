@@ -13,6 +13,9 @@ onMounted(async () => {
     await router.push("/categories");
   }
 });
+
+const buildDate: string = import.meta.env.VITE_APPLICATION_BUILD_DATE;
+const buildCommit: string = import.meta.env.VITE_APPLICATION_BUILD_COMMIT;
 </script>
 
 <template>
@@ -40,13 +43,16 @@ onMounted(async () => {
     <div class="flex-grow"></div>
 
     <footer class="mb-2 text-center text-sm text-gray-500">
-      Opmerkingen of suggesties? Laat
-      <a
-        class="text-gray-300"
-        href="https://github.com/TijmenUU/keepi-vue/issues"
-        >hier</a
-      >
-      je feedback achter.
+      <p>
+        Opmerkingen of suggesties? Laat
+        <a
+          class="text-gray-300"
+          href="https://github.com/TijmenUU/keepi-vue/issues"
+          >hier</a
+        >
+        je feedback achter.
+      </p>
+      <p class="text-xs">{{ buildDate }}+{{ buildCommit }}</p>
     </footer>
   </div>
 </template>
