@@ -2,7 +2,7 @@
 import KeepiButton from "@/components/KeepiButton.vue";
 import KeepiInput from "@/components/KeepiInput.vue";
 import { DateRange } from "@/date";
-import { toHoursMinutesNotation, tryParseTimeNotation } from "@/format";
+import { toHoursMinutesNotation, tryParseTimeNotation, toShortDutchDate } from "@/format";
 import { INokoGetEntryResponse } from "@/responses";
 import { useApplicationStore } from "@/store/application-store";
 import { mapToTimeTableEntries, getNokoCallsForDelta } from "@/transformer";
@@ -240,8 +240,8 @@ const onSubmit = async () => {
           <table class="table-auto">
             <tr>
               <th></th>
-              <th v-for="day in loggableDays" :key="day">
-                <span>{{ day.substring(0, 2) }}</span>
+              <th v-for="(day, index) in loggableDays" :key="day">
+                <span :title="toShortDutchDate(dateRange.dates[index])">{{ day.substring(0, 2) }}</span>
                 <span
                   class="text-blue-500"
                   :class="{ invisible: day !== today }"
