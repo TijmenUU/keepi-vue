@@ -16,25 +16,39 @@ onMounted(async () => {
 </script>
 
 <template>
-  <Transition name="fade" mode="out-in" appear>
-    <NavigationMenu v-if="store.isConfigured" />
-  </Transition>
-
-  <RouterView v-slot="{ Component }">
+  <div class="flex min-h-screen flex-col">
     <Transition name="fade" mode="out-in" appear>
-      <Suspense timeout="0">
-        <template v-if="Component">
-          <component :is="Component"></component>
-        </template>
-
-        <template #fallback>
-          <div class="flex flex-grow flex-col items-center justify-center">
-            <div class="loader"></div>
-          </div>
-        </template>
-      </Suspense>
+      <NavigationMenu v-if="store.isConfigured" />
     </Transition>
-  </RouterView>
+
+    <RouterView v-slot="{ Component }">
+      <Transition name="fade" mode="out-in" appear>
+        <Suspense timeout="0">
+          <template v-if="Component">
+            <component :is="Component"></component>
+          </template>
+
+          <template #fallback>
+            <div class="flex flex-grow flex-col items-center justify-center">
+              <div class="loader"></div>
+            </div>
+          </template>
+        </Suspense>
+      </Transition>
+    </RouterView>
+
+    <div class="flex-grow"></div>
+
+    <footer class="mb-2 text-center text-sm text-gray-500">
+      Opmerkingen of suggesties? Laat
+      <a
+        class="text-gray-300"
+        href="https://github.com/TijmenUU/keepi-vue/issues"
+        >hier</a
+      >
+      je feedback achter.
+    </footer>
+  </div>
 </template>
 
 <style>
