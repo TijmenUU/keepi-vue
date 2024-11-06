@@ -4,7 +4,14 @@ import KeepiCheckbox from "@/components/KeepiCheckbox.vue";
 import KeepiInput from "@/components/KeepiInput.vue";
 import { useApplicationStore } from "@/store/application-store";
 import { createSwapy } from "swapy";
-import { computed, onMounted, reactive, ref, useTemplateRef } from "vue";
+import {
+  computed,
+  nextTick,
+  onMounted,
+  reactive,
+  ref,
+  useTemplateRef,
+} from "vue";
 import {
   onBeforeRouteLeave,
   RouteLocationNormalizedGeneric,
@@ -66,7 +73,7 @@ const values: CategoryEntry[] = reactive(
 const swapyReportedOrder = ref<number[]>([]);
 const swapyContainer = useTemplateRef("container");
 
-onMounted(() => {
+const initializeSwapy = () => {
   if (swapyContainer.value != null) {
     const swapy = createSwapy(swapyContainer.value);
     swapy.onSwap((event) => {
@@ -75,6 +82,12 @@ onMounted(() => {
         .filter((i) => i != null)
         .map((i) => parseInt(i));
     });
+  }
+};
+
+onMounted(() => {
+  if (values.length > 0) {
+    initializeSwapy();
   }
 });
 
@@ -188,6 +201,10 @@ const onAddCategory = () => {
   });
 
   onResetAdd();
+
+  if (values.length === 1) {
+    nextTick(initializeSwapy);
+  }
 };
 
 const onResetAdd = (): void => {
