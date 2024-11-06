@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <SpaRoot>..\Keepi.Vue\</SpaRoot>
+    <SpaClientUrl>http://localhost:5173</SpaClientUrl>
+    <SpaLaunchCommand>bun run dev</SpaLaunchCommand>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AspNetCore.SpaYarp" Version="2.0.1" />
+  </ItemGroup>
+
+</Project>
