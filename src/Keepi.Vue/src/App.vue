@@ -15,6 +15,9 @@ onMounted(async () => {
 
   // START DEBUG
   fetch("/api/test").then(async (res) => console.debug(await res.text()));
+  fetch("/api/testauthorized").then(async (res) =>
+    console.debug(await res.text()),
+  );
   // END DEBUG
 });
 
