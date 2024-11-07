@@ -32,3 +32,4 @@ examples/
 # C#
 src/*/bin
 src/*/obj
+published/

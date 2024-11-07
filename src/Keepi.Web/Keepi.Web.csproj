@@ -19,4 +19,15 @@
   <ItemGroup>
     <ProjectReference Include="..\Keepi.Api\Keepi.Api.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <None Update="wwwroot\**\*.*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <Target Name="SpaBuild" BeforeTargets="Build" Condition="'$(Configuration)' == 'Release'">
+    <Exec Command="bun i" WorkingDirectory="../Keepi.Vue" />
+    <Exec Command="bun run build" WorkingDirectory="../Keepi.Vue" />
+  </Target>
 </Project>
