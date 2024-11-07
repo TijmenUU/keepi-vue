@@ -8,7 +8,11 @@ builder.Services.AddFastEndpoints(options =>
     typeof(Keepi.Api.GetTest.GetTestEndpoint).Assembly
   ];
 });
-builder.Services.AddSpaYarp();
+
+if (builder.Environment.IsDevelopment())
+{
+  builder.Services.AddSpaYarp();
+}
 
 var app = builder.Build();
 
@@ -19,10 +23,14 @@ app.UseFastEndpoints(config =>
   config.Endpoints.RoutePrefix = "api";
 });
 
-// app.MapGet("/", () => "Hello World!");
-
-// TODO if development use YARP, otherwise serve the Vue app through the fallback handler
-app.UseSpaYarp();
-// app.MapFallbackToFile("index.html"); // PROD ONLY
+if (builder.Environment.IsDevelopment())
+{
+  app.UseSpaYarp();
+}
+else
+{
+  app.UseStaticFiles();
+  app.MapFallbackToFile("index.html");
+}
 
 app.Run();
