@@ -2,7 +2,7 @@
 import NavigationMenu from "@/components/NavigationMenu.vue";
 import { router } from "@/router";
 import { useApplicationStore } from "@/store/application-store";
-import { onMounted, ref } from "vue";
+import { onMounted } from "vue";
 
 const store = useApplicationStore();
 
@@ -14,10 +14,7 @@ onMounted(async () => {
   }
 
   // START DEBUG
-  const apiBaseUrl: string = import.meta.env.VITE_APPLICATION_API_BASE_URL;
-  fetch(`${apiBaseUrl}/api/test`).then(async (res) =>
-    console.debug(await res.text()),
-  );
+  fetch("/api/test").then(async (res) => console.debug(await res.text()));
   // END DEBUG
 });
 
