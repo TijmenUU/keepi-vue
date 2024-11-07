@@ -7,6 +7,7 @@ export default defineConfig({
   plugins: [vue()],
   build: {
     outDir: "../Keepi.Web/wwwroot/",
+    emptyOutDir: true,
   },
   resolve: {
     alias: [
