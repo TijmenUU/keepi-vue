@@ -10,6 +10,9 @@ const nokoProjectCacheStorageKey = "noko-projects";
 let cachedNokoClient: NokoClient | null = null;
 
 interface IState {
+  user: {
+    name: string;
+  } | null;
   apiKey: string;
   nokoUser: {
     id: number;
@@ -23,6 +26,7 @@ interface IState {
 export const useApplicationStore = defineStore("application", {
   state: (): IState => {
     return {
+      user: null,
       apiKey: "",
       nokoUser: null,
       categories: [],
@@ -43,6 +47,20 @@ export const useApplicationStore = defineStore("application", {
   },
 
   actions: {
+    async isAuthenticated(): Promise<boolean> {
+      if (this.user == null) {
+        const response = await fetch("/api/user");
+        if (response.status === 401) {
+          return false;
+        }
+
+        this.user = {
+          name: (await response.json()).name,
+        };
+      }
+
+      return true;
+    },
     async hydrate(): Promise<void> {
       const storedKey = localStorage.getItem(apiKeyLocalStorageKey);
       if (storedKey == null || storedKey.length === 0) {
@@ -294,7 +312,7 @@ function tryParseStoredNokoProjects(json: string): INokoGetProjectResponse[] {
       results.push({
         id: candidate.id,
         name: candidate.name,
-        enabled: true
+        enabled: true,
       });
     } else {
       console.debug("Stored tag to category mapping is not valid", candidate);
