@@ -1,6 +1,6 @@
 using FastEndpoints;
 
-namespace Keepi.Api.GetTest;
+namespace Keepi.Api.Endpoints.GetTest;
 
 public class GetTestEndpoint : EndpointWithoutRequest<GetTestResponse>
 {

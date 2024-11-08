@@ -1,4 +1,4 @@
-namespace Keepi.Api.GetTest;
+namespace Keepi.Api.Endpoints.GetTest;
 
 public class GetTestResponse
 {
