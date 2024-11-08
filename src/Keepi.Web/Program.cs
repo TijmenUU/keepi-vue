@@ -1,5 +1,6 @@
 using AspNet.Security.OAuth.GitHub;
 using FastEndpoints;
+using Keepi.Api.Endpoints.GetTest;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,7 +14,7 @@ internal class Program
     builder.Services.AddFastEndpoints(options =>
     {
       options.Assemblies = [
-        typeof(Keepi.Api.GetTest.GetTestEndpoint).Assembly
+        typeof(GetTestEndpoint).Assembly
       ];
     });
 

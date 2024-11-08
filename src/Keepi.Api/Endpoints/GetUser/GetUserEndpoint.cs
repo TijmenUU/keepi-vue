@@ -1,6 +1,6 @@
 using FastEndpoints;
 
-namespace Keepi.Api.GetAuthorizedTest;
+namespace Keepi.Api.Endpoints.GetUser;
 
 public class GetUserEndpoint : EndpointWithoutRequest<GetUserResponse>
 {
@@ -17,6 +17,9 @@ public class GetUserEndpoint : EndpointWithoutRequest<GetUserResponse>
         response: new GetUserResponse
         {
           Name = User.Identity.Name,
+          Claims = User.Claims.ToDictionary(
+            keySelector: (claim) => claim.Type,
+            elementSelector: (claim) => claim.Value)
         },
         cancellation: cancellationToken);
     }

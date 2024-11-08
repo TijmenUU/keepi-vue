@@ -1,6 +1,6 @@
 using FastEndpoints;
 
-namespace Keepi.Api.GetAuthorizedTest;
+namespace Keepi.Api.Endpoints.GetAuthorizedTest;
 
 public class GetAuthorizedTestEndpoint : EndpointWithoutRequest<GetAuthorizedTestResponse>
 {
