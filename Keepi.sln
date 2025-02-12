@@ -7,9 +7,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Keepi.Api", "src\Keepi.Api\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Keepi.Core", "src\Keepi.Core\Keepi.Core.csproj", "{6C31A6F7-B15F-4AA0-86F1-6A8D3EF400C3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Keepi.Infrastructure", "src\Keepi.Infrastructure\Keepi.Infrastructure.csproj", "{60E0B77E-55FD-4A70-9DBC-86647C7A5184}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Keepi.Web", "src\Keepi.Web\Keepi.Web.csproj", "{7E9DDE6F-59A3-4029-8FA9-35A8CDB11CE5}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{0FF4FE3F-8D91-43C1-91CF-DDA1F9D2F5E3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Keepi.Data", "src\Keepi.Data\Keepi.Data.csproj", "{DA489D2B-EFCF-463C-AC99-C2FE62032BB9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -28,13 +30,16 @@ Global
 		{6C31A6F7-B15F-4AA0-86F1-6A8D3EF400C3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6C31A6F7-B15F-4AA0-86F1-6A8D3EF400C3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6C31A6F7-B15F-4AA0-86F1-6A8D3EF400C3}.Release|Any CPU.Build.0 = Release|Any CPU
-		{60E0B77E-55FD-4A70-9DBC-86647C7A5184}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{60E0B77E-55FD-4A70-9DBC-86647C7A5184}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{60E0B77E-55FD-4A70-9DBC-86647C7A5184}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{60E0B77E-55FD-4A70-9DBC-86647C7A5184}.Release|Any CPU.Build.0 = Release|Any CPU
 		{7E9DDE6F-59A3-4029-8FA9-35A8CDB11CE5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{7E9DDE6F-59A3-4029-8FA9-35A8CDB11CE5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7E9DDE6F-59A3-4029-8FA9-35A8CDB11CE5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7E9DDE6F-59A3-4029-8FA9-35A8CDB11CE5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DA489D2B-EFCF-463C-AC99-C2FE62032BB9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DA489D2B-EFCF-463C-AC99-C2FE62032BB9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DA489D2B-EFCF-463C-AC99-C2FE62032BB9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DA489D2B-EFCF-463C-AC99-C2FE62032BB9}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{DA489D2B-EFCF-463C-AC99-C2FE62032BB9} = {0FF4FE3F-8D91-43C1-91CF-DDA1F9D2F5E3}
 	EndGlobalSection
 EndGlobal

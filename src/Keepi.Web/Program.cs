@@ -1,8 +1,9 @@
 using AspNet.Security.OAuth.GitHub;
 using FastEndpoints;
 using Keepi.Api.Endpoints.GetTest;
+using Keepi.Core.DependencyInjection;
+using Keepi.Data.DependencyInjection;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Mvc;
 
 internal class Program
 {
@@ -23,6 +24,9 @@ internal class Program
       // https://github.com/berhir/AspNetCore.SpaYarp
       builder.Services.AddSpaYarp();
     }
+
+    builder.Services.AddRepositories();
+    builder.Services.AddUseCases();
 
     builder.Services.AddAuthorization(configure =>
     {

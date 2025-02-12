@@ -33,3 +33,8 @@ examples/
 src/*/bin
 src/*/obj
 published/
+
+# Keepi
+keepi.db
+keepi.db-wal
+keepi.db-shm

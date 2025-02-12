@@ -16,10 +16,15 @@
   <ItemGroup>
     <PackageReference Include="AspNet.Security.OAuth.GitHub" Version="8.3.0" />
     <PackageReference Include="AspNetCore.SpaYarp" Version="2.0.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.1">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Keepi.Api\Keepi.Api.csproj" />
+    <ProjectReference Include="..\Keepi.Data\Keepi.Data.csproj" />
   </ItemGroup>
 
   <ItemGroup>
