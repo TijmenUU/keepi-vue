@@ -1,7 +1,7 @@
 namespace Keepi.Api.Endpoints.GetUser;
 
-public class GetUserResponse
+public class GetUserResponse(string name, bool registered)
 {
-  public string Name { get; set; } = string.Empty;
-  public Dictionary<string, string> Claims { get; set; } = new();
+  public string Name { get; } = name;
+  public bool Registered { get; } = registered;
 }

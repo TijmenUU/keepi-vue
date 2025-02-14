@@ -1,5 +1,5 @@
-using System.Security.Claims;
 using FastEndpoints;
+using Keepi.Api.Extensions;
 using Keepi.Core.UseCases;
 using Microsoft.Extensions.Logging;
 
@@ -19,35 +19,7 @@ public class PostRegisterUserEndpoint(
     PostRegisterUserRequest request,
     CancellationToken cancellationToken)
   {
-    var externalIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
-    if (string.IsNullOrWhiteSpace(externalIdClaim?.Value))
-    {
-      logger.LogDebug("Refusing to register user without a name identifier");
-
-      await SendErrorsAsync(
-        statusCode: 400,
-        cancellation: cancellationToken);
-      return;
-    }
-    if (externalIdClaim.Issuer != "github")
-    {
-      logger.LogDebug("Refusing to register non GitHub user");
-
-      await SendErrorsAsync(
-        statusCode: 400,
-        cancellation: cancellationToken);
-      return;
-    }
-
-    string? userName = User.Identity?.Name;
-    if (!string.IsNullOrWhiteSpace(request.Name))
-    {
-      userName = request.Name;
-    }
-
-    string emailAddress = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value ?? string.Empty;
-
-    if (string.IsNullOrWhiteSpace(userName) || string.IsNullOrWhiteSpace(emailAddress))
+    if (!User.TryGetUserInfo(out var userInfo))
     {
       logger.LogDebug("Refusing to register user without required claims present");
 
@@ -58,9 +30,9 @@ public class PostRegisterUserEndpoint(
     }
 
     var result = await registerUserUseCase.Execute(
-      externalId: externalIdClaim.Value,
-      emailAddress: emailAddress,
-      name: userName,
+      externalId: userInfo.ExternalId,
+      emailAddress: userInfo.EmailAddress,
+      name: userInfo.Name,
       provider: RegisterUserIdentityProvider.GitHub,
       cancellationToken: cancellationToken);
 

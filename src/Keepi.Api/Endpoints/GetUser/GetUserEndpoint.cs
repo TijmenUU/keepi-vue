@@ -1,32 +1,32 @@
 using FastEndpoints;
+using Keepi.Api.Extensions;
+using Keepi.Core.Repositories;
 
 namespace Keepi.Api.Endpoints.GetUser;
 
-public class GetUserEndpoint : EndpointWithoutRequest<GetUserResponse>
+public class GetUserEndpoint(IGetUserExists getUserExists)
+ : EndpointWithoutRequest<GetUserResponse>
 {
   public override void Configure()
   {
     Get("/user");
-    AllowAnonymous();
   }
 
   public override async Task HandleAsync(CancellationToken cancellationToken)
   {
-    if (User.Identity?.Name != null)
+    if (!User.TryGetUserInfo(out var userInfo))
     {
-      await SendAsync(
-        response: new GetUserResponse
-        {
-          Name = User.Identity.Name,
-          Claims = User.Claims.ToDictionary(
-            keySelector: (claim) => claim.Type,
-            elementSelector: (claim) => claim.Value)
-        },
-        cancellation: cancellationToken);
+      await SendForbiddenAsync(cancellation: cancellationToken);
+      return;
     }
-    else
-    {
-      await SendUnauthorizedAsync(cancellationToken);
-    }
+
+    await SendAsync(
+      response: new GetUserResponse(
+        name: userInfo.Name,
+        registered: await getUserExists.Execute(
+          externalId: userInfo.ExternalId,
+          emailAddress: userInfo.EmailAddress,
+          cancellationToken: cancellationToken)),
+      cancellation: cancellationToken);
   }
 }

@@ -12,25 +12,7 @@ onMounted(async () => {
   } else if (store.requiresCategories) {
     await router.push("/categories");
   }
-
-  // START DEBUG
-  fetch("/api/test").then(async (res) => console.debug(await res.text()));
-  fetch("/api/testauthorized").then(async (res) =>
-    console.debug(await res.text()),
-  );
-  // END DEBUG
 });
-
-const onRegister = async () => {
-  fetch("/api/registeruser", {
-    method: "POST",
-    headers: {
-      Accept: "application/json",
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ name: "Test" }),
-  }).then(async (res) => console.debug(await res.text()));
-};
 
 const buildDate: string = import.meta.env.VITE_APPLICATION_BUILD_DATE;
 const buildCommit: string = import.meta.env.VITE_APPLICATION_BUILD_COMMIT;
@@ -57,8 +39,6 @@ const buildCommit: string = import.meta.env.VITE_APPLICATION_BUILD_COMMIT;
         </Suspense>
       </Transition>
     </RouterView>
-
-    <button @click="onRegister">Register</button>
 
     <div class="flex-grow"></div>
 

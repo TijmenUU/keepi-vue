@@ -47,21 +47,20 @@ export const useApplicationStore = defineStore("application", {
   },
 
   actions: {
-    async isAuthenticated(): Promise<boolean> {
-      if (this.user == null) {
-        const response = await fetch("/api/user");
-        if (response.status === 401) {
-          return false;
+    async hydrate(): Promise<void> {
+      const userResponse = await fetch("/api/user", { redirect: "manual" });
+      if (userResponse.status != 200) {
+        location.href = `/signin?ReturnUrl=${encodeURIComponent(location.href)}`;
+        return;
+      }
+      const isUserRegistered = (await userResponse.json()).registered;
+      if (!isUserRegistered) {
+        const response = await fetch("/api/registeruser");
+        if (response.status != 200) {
+          throw new Error("User registration failed");
         }
-
-        this.user = {
-          name: (await response.json()).name,
-        };
       }
 
-      return true;
-    },
-    async hydrate(): Promise<void> {
       const storedKey = localStorage.getItem(apiKeyLocalStorageKey);
       if (storedKey == null || storedKey.length === 0) {
         return;
