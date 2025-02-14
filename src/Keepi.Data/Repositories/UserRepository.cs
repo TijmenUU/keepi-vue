@@ -8,18 +8,18 @@ using Microsoft.EntityFrameworkCore;
 namespace Keepi.Data.Repositories;
 
 internal sealed class UserRepository(DatabaseContext databaseContext)
- : IGetUserWithProjectsAndEntries,
+ : IGetUserWithCategories,
   IGetUserExists,
   IStoreNewUser
 {
-  async Task<bool> IGetUserExists.UserExists(string externalId, string emailAddress, CancellationToken cancellationToken)
+  async Task<bool> IGetUserExists.Execute(string externalId, string emailAddress, CancellationToken cancellationToken)
   {
     return await databaseContext.Users.AnyAsync(
       u => u.ExternalId == externalId || u.EmailAddress == emailAddress,
       cancellationToken);
   }
 
-  async Task<UserAggregate> IGetUserWithProjectsAndEntries.Execute(int userId, CancellationToken cancellationToken)
+  async Task<UserAggregate> IGetUserWithCategories.Execute(int userId, CancellationToken cancellationToken)
   {
     var user = await databaseContext.Users
       .Include(u => u.Entries)
@@ -51,7 +51,7 @@ internal sealed class UserRepository(DatabaseContext databaseContext)
         .ToList());
   }
 
-  async Task IStoreNewUser.Store(
+  async Task IStoreNewUser.Execute(
     string externalId,
     string emailAddress,
     string name,

@@ -35,7 +35,7 @@ internal class RegisterUserUseCase(
     RegisterUserIdentityProvider provider,
     CancellationToken cancellationToken)
   {
-    if (await getUserExists.UserExists(
+    if (await getUserExists.Execute(
       externalId: externalId,
       emailAddress: emailAddress,
       cancellationToken: cancellationToken))
@@ -43,7 +43,7 @@ internal class RegisterUserUseCase(
       return RegisterUserUseCaseResult.UserAlreadyExists;
     }
 
-    await storeNewUser.Store(
+    await storeNewUser.Execute(
       externalId: externalId,
       emailAddress: emailAddress,
       name: name,

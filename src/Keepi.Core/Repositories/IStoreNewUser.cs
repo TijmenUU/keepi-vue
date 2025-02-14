@@ -4,7 +4,7 @@ namespace Keepi.Core.Repositories;
 
 public interface IStoreNewUser
 {
-  Task Store(
+  Task Execute(
     string externalId,
     string emailAddress,
     string name,
