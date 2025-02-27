@@ -18,13 +18,13 @@ dotnet user-secrets set 'Authentication:GitHub:ClientSecret' 'YOUR_CLIENT_SECRET
 ## Creating database migrations
 
 ```bash
-dotnet ef migrations add InitialCreate -p src/Keepi.Data -s src/Keepi.Web
+dotnet ef migrations add InitialCreate -p src/Keepi.Infrastructure.Data -s src/Keepi.Web
 ```
 
 ## Creating the database
 
 ```bash
-dotnet ef database update -p src/Keepi.Data -s src/Keepi.Web
+dotnet ef database update -p src/Keepi.Infrastructure.Data -s src/Keepi.Web
 ```
 
 ## HTTPS certificate not trusted on Linux

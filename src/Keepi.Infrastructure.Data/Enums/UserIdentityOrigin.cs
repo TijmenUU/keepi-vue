@@ -1,4 +1,4 @@
-namespace Keepi.Data.Enums;
+namespace Keepi.Infrastructure.Data.Enums;
 
 internal enum UserIdentityOrigin
 {

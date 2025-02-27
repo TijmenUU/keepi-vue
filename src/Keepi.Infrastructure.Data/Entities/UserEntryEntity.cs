@@ -1,7 +1,7 @@
 #nullable disable
 using Microsoft.EntityFrameworkCore;
 
-namespace Keepi.Data.Entities;
+namespace Keepi.Infrastructure.Data.Entities;
 
 [Index(nameof(Date))]
 internal sealed class UserEntryEntity

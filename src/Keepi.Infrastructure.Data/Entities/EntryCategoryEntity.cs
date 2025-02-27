@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.EntityFrameworkCore;
 
-namespace Keepi.Data.Entities;
+namespace Keepi.Infrastructure.Data.Entities;
 
 [Index(nameof(Name), nameof(UserId), IsUnique = true)]
 [Index(nameof(ActiveFrom), nameof(ActiveTo))]

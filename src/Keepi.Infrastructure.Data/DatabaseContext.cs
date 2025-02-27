@@ -1,7 +1,7 @@
-using Keepi.Data.Entities;
+using Keepi.Infrastructure.Data.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace Keepi.Data;
+namespace Keepi.Infrastructure.Data;
 
 internal class DatabaseContext : DbContext
 {

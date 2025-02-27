@@ -1,9 +1,9 @@
 #nullable disable
 using System.ComponentModel.DataAnnotations;
-using Keepi.Data.Enums;
+using Keepi.Infrastructure.Data.Enums;
 using Microsoft.EntityFrameworkCore;
 
-namespace Keepi.Data.Entities;
+namespace Keepi.Infrastructure.Data.Entities;
 
 [Index(nameof(ExternalId), IsUnique = true)]
 [Index(nameof(EmailAddress), IsUnique = true)]

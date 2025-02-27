@@ -2,10 +2,10 @@ using Keepi.Core.Aggregates;
 using Keepi.Core.Entities;
 using Keepi.Core.Repositories;
 using Keepi.Core.UseCases;
-using Keepi.Data.Enums;
+using Keepi.Infrastructure.Data.Enums;
 using Microsoft.EntityFrameworkCore;
 
-namespace Keepi.Data.Repositories;
+namespace Keepi.Infrastructure.Data.Repositories;
 
 internal sealed class UserRepository(DatabaseContext databaseContext)
  : IGetUserWithCategories,

@@ -24,7 +24,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Keepi.Api\Keepi.Api.csproj" />
-    <ProjectReference Include="..\Keepi.Data\Keepi.Data.csproj" />
+    <ProjectReference Include="..\Keepi.Infrastructure.Data\Keepi.Infrastructure.Data.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -2,7 +2,7 @@ using AspNet.Security.OAuth.GitHub;
 using FastEndpoints;
 using Keepi.Api.Endpoints.GetTest;
 using Keepi.Core.DependencyInjection;
-using Keepi.Data.DependencyInjection;
+using Keepi.Infrastructure.Data.DependencyInjection;
 using Microsoft.AspNetCore.Authentication.Cookies;
 
 internal class Program

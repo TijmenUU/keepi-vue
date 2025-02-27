@@ -1,8 +1,8 @@
 using Keepi.Core.Repositories;
-using Keepi.Data.Repositories;
+using Keepi.Infrastructure.Data.Repositories;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Keepi.Data.DependencyInjection;
+namespace Keepi.Infrastructure.Data.DependencyInjection;
 
 public static class IServiceCollectionExtensions
 {

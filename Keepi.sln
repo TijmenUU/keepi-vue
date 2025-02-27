@@ -11,7 +11,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Keepi.Web", "src\Keepi.Web\
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{0FF4FE3F-8D91-43C1-91CF-DDA1F9D2F5E3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Keepi.Data", "src\Keepi.Data\Keepi.Data.csproj", "{DA489D2B-EFCF-463C-AC99-C2FE62032BB9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Keepi.Infrastructure.Data", "src\Keepi.Infrastructure.Data\Keepi.Infrastructure.Data.csproj", "{DA489D2B-EFCF-463C-AC99-C2FE62032BB9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
