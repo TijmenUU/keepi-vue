@@ -43,7 +43,7 @@ dotnet ef database update -p src/Keepi.Infrastructure.Data -s src/Keepi.Web
 
 ## HTTPS certificate not trusted on Linux
 
-The combination of Linux and Firefox seems to work after using this third party tool:
+The combination of Linux and Firefox seems to work after using [this third party tool](https://github.com/dotnet/aspnetcore/issues/32842#issuecomment-2206905474):
 
 ```bash
 dotnet tool update -g linux-dev-certs
