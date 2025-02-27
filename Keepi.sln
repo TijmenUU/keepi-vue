@@ -13,6 +13,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{0FF4FE3F-8D9
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Keepi.Infrastructure.Data", "src\Keepi.Infrastructure.Data\Keepi.Infrastructure.Data.csproj", "{DA489D2B-EFCF-463C-AC99-C2FE62032BB9}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{40622552-B34C-464D-84F8-7FCCE7AEEFF6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Keepi.Core.Unit.Tests", "tests\Keepi.Core.Unit.Tests\Keepi.Core.Unit.Tests.csproj", "{50824E80-0BD9-4B7B-B2C4-2E60A3483F0E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -38,8 +42,13 @@ Global
 		{DA489D2B-EFCF-463C-AC99-C2FE62032BB9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DA489D2B-EFCF-463C-AC99-C2FE62032BB9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DA489D2B-EFCF-463C-AC99-C2FE62032BB9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{50824E80-0BD9-4B7B-B2C4-2E60A3483F0E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{50824E80-0BD9-4B7B-B2C4-2E60A3483F0E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{50824E80-0BD9-4B7B-B2C4-2E60A3483F0E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{50824E80-0BD9-4B7B-B2C4-2E60A3483F0E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{DA489D2B-EFCF-463C-AC99-C2FE62032BB9} = {0FF4FE3F-8D91-43C1-91CF-DDA1F9D2F5E3}
+		{50824E80-0BD9-4B7B-B2C4-2E60A3483F0E} = {40622552-B34C-464D-84F8-7FCCE7AEEFF6}
 	EndGlobalSection
 EndGlobal

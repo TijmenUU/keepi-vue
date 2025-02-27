@@ -32,6 +32,8 @@ examples/
 # C#
 src/*/bin
 src/*/obj
+tests/*/bin
+tests/*/obj
 published/
 
 # Keepi
