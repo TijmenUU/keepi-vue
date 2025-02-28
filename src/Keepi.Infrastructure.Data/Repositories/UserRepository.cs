@@ -1,14 +1,12 @@
-using Keepi.Core.Aggregates;
 using Keepi.Core.Entities;
+using Keepi.Core.Enums;
 using Keepi.Core.Repositories;
-using Keepi.Core.UseCases;
-using Keepi.Infrastructure.Data.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace Keepi.Infrastructure.Data.Repositories;
 
 internal sealed class UserRepository(DatabaseContext databaseContext)
- : IGetUserWithCategories,
+ : IGetUserEntryCategories,
   IGetUserExists,
   IStoreNewUser
 {
@@ -19,46 +17,30 @@ internal sealed class UserRepository(DatabaseContext databaseContext)
       cancellationToken);
   }
 
-  async Task<UserAggregate> IGetUserWithCategories.Execute(int userId, CancellationToken cancellationToken)
+  async Task<EntryCategoryEntity[]> IGetUserEntryCategories.Execute(int userId, CancellationToken cancellationToken)
   {
-    var user = await databaseContext.Users
-      .Include(u => u.Entries)
-      .Include(u => u.EntryCategories)
-      .SingleAsync(u => u.Id == userId, cancellationToken);
+    var entryCategories = await databaseContext.EntryCategories
+      .Where(c => c.UserId == userId)
+      .ToArrayAsync(cancellationToken);
 
-    return new UserAggregate(
-      user: new UserEntity(
-        id: user.Id,
-        emailAddress: user.EmailAddress,
-        name: user.Name,
-        identityOrigin: user.IdentityOrigin.MapToDomainModel()),
-      categories: user.EntryCategories
-        .Select(c => new EntryCategoryEntity(
-          id: c.Id,
-          name: c.Name,
-          enabled: c.Enabled,
-          activeFrom: c.ActiveFrom,
-          activeTo: c.ActiveTo))
-        .ToList(),
-      entries: user.Entries
-        .Select(e => new UserEntryEntity(
-          id: e.Id,
-          userId: e.Id,
-          entryCategoryId: e.EntryCategoryId,
-          date: e.Date,
-          minutes: e.Minutes,
-          remark: e.Remark))
-        .ToList());
+    return entryCategories
+      .Select(c => new EntryCategoryEntity(
+        id: c.Id,
+        name: c.Name,
+        enabled: c.Enabled,
+        activeFrom: c.ActiveFrom,
+        activeTo: c.ActiveTo))
+      .ToArray();
   }
 
   async Task IStoreNewUser.Execute(
     string externalId,
     string emailAddress,
     string name,
-    RegisterUserIdentityProvider userIdentityProvider,
+    UserIdentityProvider userIdentityProvider,
     CancellationToken cancellationToken)
   {
-    if (userIdentityProvider != RegisterUserIdentityProvider.GitHub)
+    if (userIdentityProvider != UserIdentityProvider.GitHub)
     {
       throw new ArgumentOutOfRangeException(paramName: nameof(userIdentityProvider));
     }

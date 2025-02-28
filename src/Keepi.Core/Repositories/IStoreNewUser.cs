@@ -1,4 +1,4 @@
-using Keepi.Core.UseCases;
+using Keepi.Core.Enums;
 
 namespace Keepi.Core.Repositories;
 
@@ -8,6 +8,6 @@ public interface IStoreNewUser
     string externalId,
     string emailAddress,
     string name,
-    RegisterUserIdentityProvider userIdentityProvider,
+    UserIdentityProvider userIdentityProvider,
     CancellationToken cancellationToken);
 }

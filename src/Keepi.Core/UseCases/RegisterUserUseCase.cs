@@ -1,3 +1,4 @@
+using Keepi.Core.Enums;
 using Keepi.Core.Repositories;
 
 namespace Keepi.Core.UseCases;
@@ -8,18 +9,13 @@ public enum RegisterUserUseCaseResult
   UserCreated,
 };
 
-public enum RegisterUserIdentityProvider
-{
-  GitHub,
-}
-
 public interface IRegisterUserUseCase
 {
   Task<RegisterUserUseCaseResult> Execute(
     string externalId,
     string emailAddress,
     string name,
-    RegisterUserIdentityProvider provider,
+    UserIdentityProvider provider,
     CancellationToken cancellationToken);
 }
 
@@ -32,7 +28,7 @@ internal class RegisterUserUseCase(
     string externalId,
     string emailAddress,
     string name,
-    RegisterUserIdentityProvider provider,
+    UserIdentityProvider provider,
     CancellationToken cancellationToken)
   {
     if (await getUserExists.Execute(

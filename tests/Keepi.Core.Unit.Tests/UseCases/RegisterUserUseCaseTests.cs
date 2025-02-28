@@ -1,4 +1,5 @@
-﻿using Keepi.Core.Repositories;
+﻿using Keepi.Core.Enums;
+using Keepi.Core.Repositories;
 using Keepi.Core.UseCases;
 
 namespace Keepi.Core.Unit.Tests.UseCases;
@@ -17,7 +18,7 @@ public class RegisterUserUseCaseTests
                 externalId: "external ID",
                 emailAddress: "test@example.com",
                 name: "Piet Hein",
-                identityProvider: RegisterUserIdentityProvider.GitHub);
+                identityProvider: UserIdentityProvider.GitHub);
 
         var useCase = context.BuildUseCase();
 
@@ -25,12 +26,12 @@ public class RegisterUserUseCaseTests
             externalId: "external ID",
             emailAddress: "test@example.com",
             name: "Piet Hein",
-            provider: RegisterUserIdentityProvider.GitHub,
+            provider: UserIdentityProvider.GitHub,
             cancellationToken: CancellationToken.None);
 
         result.ShouldBe(RegisterUserUseCaseResult.UserCreated);
 
-        context.StoreNewUserMock.Verify(x => x.Execute("external ID", "test@example.com", "Piet Hein", RegisterUserIdentityProvider.GitHub, It.IsAny<CancellationToken>()));
+        context.StoreNewUserMock.Verify(x => x.Execute("external ID", "test@example.com", "Piet Hein", UserIdentityProvider.GitHub, It.IsAny<CancellationToken>()));
     }
 
     [Fact]
@@ -45,7 +46,7 @@ public class RegisterUserUseCaseTests
                 externalId: "external ID",
                 emailAddress: "test@example.com",
                 name: "Piet Hein",
-                identityProvider: RegisterUserIdentityProvider.GitHub);
+                identityProvider: UserIdentityProvider.GitHub);
 
         var useCase = context.BuildUseCase();
 
@@ -53,7 +54,7 @@ public class RegisterUserUseCaseTests
             externalId: "external ID",
             emailAddress: "test@example.com",
             name: "Piet Hein",
-            provider: RegisterUserIdentityProvider.GitHub,
+            provider: UserIdentityProvider.GitHub,
             cancellationToken: CancellationToken.None);
 
         result.ShouldBe(RegisterUserUseCaseResult.UserAlreadyExists);
@@ -79,7 +80,7 @@ public class RegisterUserUseCaseTests
             string externalId,
             string emailAddress,
             string name,
-            RegisterUserIdentityProvider identityProvider)
+            UserIdentityProvider identityProvider)
         {
             StoreNewUserMock
                 .Setup(x => x.Execute(externalId, emailAddress, name, identityProvider, It.IsAny<CancellationToken>()))

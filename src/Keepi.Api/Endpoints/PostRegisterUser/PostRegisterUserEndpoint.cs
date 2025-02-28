@@ -1,5 +1,6 @@
 using FastEndpoints;
 using Keepi.Api.Extensions;
+using Keepi.Core.Enums;
 using Keepi.Core.UseCases;
 using Microsoft.Extensions.Logging;
 
@@ -33,7 +34,7 @@ public class PostRegisterUserEndpoint(
       externalId: userInfo.ExternalId,
       emailAddress: userInfo.EmailAddress,
       name: userInfo.Name,
-      provider: RegisterUserIdentityProvider.GitHub,
+      provider: UserIdentityProvider.GitHub,
       cancellationToken: cancellationToken);
 
     switch (result)

@@ -11,7 +11,7 @@ public static class IServiceCollectionExtensions
     services.AddDbContext<DatabaseContext>();
 
     services.AddScoped<UserRepository>();
-    services.AddScoped<IGetUserWithCategories>(sp => sp.GetRequiredService<UserRepository>());
+    services.AddScoped<IGetUserEntryCategories>(sp => sp.GetRequiredService<UserRepository>());
     services.AddScoped<IGetUserExists>(sp => sp.GetRequiredService<UserRepository>());
     services.AddScoped<IStoreNewUser>(sp => sp.GetRequiredService<UserRepository>());
 
