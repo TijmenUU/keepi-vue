@@ -49,3 +49,7 @@ The combination of Linux and Firefox seems to work after using [this third party
 dotnet tool update -g linux-dev-certs
 dotnet linux-dev-certs install
 ```
+
+## EF Core exceptions
+
+By default the EF core exceptions are not exactly developer friendly, hence a third party strongly typed exceptions [package](https://github.com/Giorgi/EntityFramework.Exceptions) is used to make it easier to implement specific exception behaviour.

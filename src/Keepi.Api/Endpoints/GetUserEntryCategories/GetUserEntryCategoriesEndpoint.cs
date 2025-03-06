@@ -1,13 +1,14 @@
 using FastEndpoints;
-using Keepi.Api.Extensions;
-using Keepi.Core.Enums;
+using Keepi.Api.Helpers;
 using Keepi.Core.Repositories;
+using Microsoft.Extensions.Logging;
 
 namespace Keepi.Api.Endpoints.GetUserEntryCategories;
 
 public class GetUserEntryCategoriesEndpoint(
-  IGetUser getUser,
-  IGetUserEntryCategories getUserEntryCategories)
+  IResolveUserHelper resolveUserHelper,
+  IGetUserEntryCategories getUserEntryCategories,
+  ILogger<GetUserEntryCategoriesEndpoint> logger)
  : EndpointWithoutRequest<GetUserEntryCategoriesResponse>
 {
   public override void Configure()
@@ -17,16 +18,15 @@ public class GetUserEntryCategoriesEndpoint(
 
   public override async Task HandleAsync(CancellationToken cancellationToken)
   {
-    if (!User.TryGetUserInfo(out var userInfo))
+    var user = await resolveUserHelper.GetUserOrNull(
+      userClaimsPrincipal: User,
+      cancellationToken: cancellationToken);
+    if (user == null)
     {
+      logger.LogDebug("Refusing to return entry categories for unregistered user");
       await SendForbiddenAsync(cancellation: cancellationToken);
       return;
     }
-
-    var user = await getUser.Execute(
-      externalId: userInfo.ExternalId,
-      identityProvider: UserIdentityProvider.GitHub,
-      cancellationToken: cancellationToken);
 
     var entryCategories = await getUserEntryCategories.Execute(
       userId: user.Id,

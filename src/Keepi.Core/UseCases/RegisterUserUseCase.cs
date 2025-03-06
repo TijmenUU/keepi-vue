@@ -5,6 +5,7 @@ namespace Keepi.Core.UseCases;
 
 public enum RegisterUserUseCaseResult
 {
+  Unknown,
   UserAlreadyExists,
   UserCreated,
 };
@@ -39,13 +40,23 @@ internal class RegisterUserUseCase(
       return RegisterUserUseCaseResult.UserAlreadyExists;
     }
 
-    await storeNewUser.Execute(
+    var result = await storeNewUser.Execute(
       externalId: externalId,
       emailAddress: emailAddress,
       name: name,
       userIdentityProvider: provider,
       cancellationToken: cancellationToken);
 
-    return RegisterUserUseCaseResult.UserCreated;
+    if (result.TrySuccess(out var error))
+    {
+      return RegisterUserUseCaseResult.UserCreated;
+    }
+
+    if (error == StoreNewUserError.DuplicateUser)
+    {
+      return RegisterUserUseCaseResult.UserAlreadyExists;
+    }
+
+    return RegisterUserUseCaseResult.Unknown;
   }
 }

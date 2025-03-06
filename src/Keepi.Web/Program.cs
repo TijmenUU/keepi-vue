@@ -1,5 +1,6 @@
 using AspNet.Security.OAuth.GitHub;
 using FastEndpoints;
+using Keepi.Api.DependencyInjection;
 using Keepi.Api.Endpoints.GetTest;
 using Keepi.Core.DependencyInjection;
 using Keepi.Infrastructure.Data.DependencyInjection;
@@ -25,6 +26,7 @@ internal class Program
       builder.Services.AddSpaYarp();
     }
 
+    builder.Services.AddApiHelpers();
     builder.Services.AddRepositories();
     builder.Services.AddUseCases();
 

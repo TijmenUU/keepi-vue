@@ -14,7 +14,7 @@ public class RegisterUserUseCaseTests
                 externalId: "external ID",
                 emailAddress: "test@example.com",
                 result: false)
-            .WithStoreNewUserResult(
+            .WithSuccesfulStoreNewUserResult(
                 externalId: "external ID",
                 emailAddress: "test@example.com",
                 name: "Piet Hein",
@@ -42,7 +42,7 @@ public class RegisterUserUseCaseTests
                 externalId: "external ID",
                 emailAddress: "test@example.com",
                 result: true)
-            .WithStoreNewUserResult(
+            .WithSuccesfulStoreNewUserResult(
                 externalId: "external ID",
                 emailAddress: "test@example.com",
                 name: "Piet Hein",
@@ -62,6 +62,54 @@ public class RegisterUserUseCaseTests
         context.StoreNewUserMock.VerifyNoOtherCalls();
     }
 
+    [Fact]
+    public async Task Execute_returns_error_on_duplicate_user_error()
+    {
+        var context = new TestContext()
+            .WithExistingUserResultFor(
+                externalId: "external ID",
+                emailAddress: "test@example.com",
+                result: false)
+            .WithErrorStoreNewUserResult(error: StoreNewUserError.DuplicateUser);
+
+        var useCase = context.BuildUseCase();
+
+        var result = await useCase.Execute(
+            externalId: "external ID",
+            emailAddress: "test@example.com",
+            name: "Piet Hein",
+            provider: UserIdentityProvider.GitHub,
+            cancellationToken: CancellationToken.None);
+
+        result.ShouldBe(RegisterUserUseCaseResult.UserAlreadyExists);
+
+        context.StoreNewUserMock.Verify(x => x.Execute("external ID", "test@example.com", "Piet Hein", UserIdentityProvider.GitHub, It.IsAny<CancellationToken>()));
+    }
+
+    [Fact]
+    public async Task Execute_returns_error_on_unknown_error()
+    {
+        var context = new TestContext()
+            .WithExistingUserResultFor(
+                externalId: "external ID",
+                emailAddress: "test@example.com",
+                result: false)
+            .WithErrorStoreNewUserResult(error: StoreNewUserError.Unknown);
+
+        var useCase = context.BuildUseCase();
+
+        var result = await useCase.Execute(
+            externalId: "external ID",
+            emailAddress: "test@example.com",
+            name: "Piet Hein",
+            provider: UserIdentityProvider.GitHub,
+            cancellationToken: CancellationToken.None);
+
+        result.ShouldBe(RegisterUserUseCaseResult.Unknown);
+
+        context.StoreNewUserMock.Verify(x => x.Execute("external ID", "test@example.com", "Piet Hein", UserIdentityProvider.GitHub, It.IsAny<CancellationToken>()));
+    }
+
     class TestContext
     {
         public Mock<IGetUserExists> GetUserExistsMock { get; } = new(MockBehavior.Strict);
@@ -76,7 +124,7 @@ public class RegisterUserUseCaseTests
             return this;
         }
 
-        public TestContext WithStoreNewUserResult(
+        public TestContext WithSuccesfulStoreNewUserResult(
             string externalId,
             string emailAddress,
             string name,
@@ -84,7 +132,16 @@ public class RegisterUserUseCaseTests
         {
             StoreNewUserMock
                 .Setup(x => x.Execute(externalId, emailAddress, name, identityProvider, It.IsAny<CancellationToken>()))
-                .Returns(Task.CompletedTask);
+                .ReturnsAsync(MaybeErrorResult<StoreNewUserError>.CreateSuccess());
+
+            return this;
+        }
+
+        public TestContext WithErrorStoreNewUserResult(StoreNewUserError error)
+        {
+            StoreNewUserMock
+                .Setup(x => x.Execute(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<UserIdentityProvider>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(MaybeErrorResult<StoreNewUserError>.CreateFailure(error));
 
             return this;
         }

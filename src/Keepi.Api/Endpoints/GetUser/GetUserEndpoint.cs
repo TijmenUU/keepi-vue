@@ -1,5 +1,4 @@
 using FastEndpoints;
-using Keepi.Api.Extensions;
 using Keepi.Core.Repositories;
 
 namespace Keepi.Api.Endpoints.GetUser;
@@ -24,9 +23,9 @@ public class GetUserEndpoint(IGetUserExists getUserExists)
       response: new GetUserResponse(
         name: userInfo.Name,
         registered: await getUserExists.Execute(
-          externalId: userInfo.ExternalId,
-          emailAddress: userInfo.EmailAddress,
-          cancellationToken: cancellationToken)),
+        externalId: userInfo.ExternalId,
+        emailAddress: userInfo.EmailAddress,
+        cancellationToken: cancellationToken)),
       cancellation: cancellationToken);
   }
 }

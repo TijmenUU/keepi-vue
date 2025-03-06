@@ -1,3 +1,4 @@
+using EntityFramework.Exceptions.Sqlite;
 using Keepi.Infrastructure.Data.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,5 +18,9 @@ internal class DatabaseContext : DbContext
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         optionsBuilder.UseSqlite("Data Source=keepi.db");
+
+        // Adds strongly typed exceptions
+        // See https://github.com/Giorgi/EntityFramework.Exceptions/blob/main/EntityFramework.Exceptions.Sqlite/SqliteExceptionProcessorInterceptor.cs
+        optionsBuilder.UseExceptionProcessor();
     }
 }
