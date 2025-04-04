@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import KeepiButton from "@/components/KeepiButton.vue";
 import KeepiInput from "@/components/KeepiInput.vue";
-import { DateRange } from "@/date";
+import type { DateRange } from "@/date";
 import { toHoursMinutesNotation, tryParseTimeNotation, toShortDutchDate } from "@/format";
-import { INokoGetEntryResponse } from "@/responses";
+import type { INokoGetEntryResponse } from "@/responses";
 import { useApplicationStore } from "@/store/application-store";
 import { mapToTimeTableEntries, getNokoCallsForDelta } from "@/transformer";
-import { LoggableDay, loggableDays, TimeTableEntry } from "@/types";
+import { type LoggableDay, loggableDays, type TimeTableEntry } from "@/types";
 import { ref, computed } from "vue";
 
 const isSaving = ref(false);

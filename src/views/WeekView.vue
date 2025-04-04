@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import KeepiButton from "@/components/KeepiButton.vue";
 import WeekEditor from "@/components/WeekEditor.vue";
-import { DateRange, getWeekDaysFor, getWeekNumber } from "@/date";
+import { type DateRange, getWeekDaysFor, getWeekNumber } from "@/date";
 import { toShortDutchDate } from "@/format";
-import { INokoGetEntryResponse } from "@/responses";
+import type { INokoGetEntryResponse } from "@/responses";
 import { useApplicationStore } from "@/store/application-store";
 import { loggableDays } from "@/types";
 import { computed, ref } from "vue";

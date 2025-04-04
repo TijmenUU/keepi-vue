@@ -1,7 +1,7 @@
 import { getDifferenceInSeconds } from "@/date";
 import { toShortIsoDate } from "@/format";
-import { INokoPostEntryRequest, INokoPutEntryRequest } from "@/requests";
-import {
+import type { INokoPostEntryRequest, INokoPutEntryRequest } from "@/requests";
+import type {
   INokoGetEntryResponse,
   INokoGetProjectResponse,
   INokoGetTagResponse,

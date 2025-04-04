@@ -1,11 +1,11 @@
-import { DateRange } from "@/date";
+import type { DateRange } from "@/date";
 import { toShortIsoDate } from "@/format";
-import { INokoPostEntryRequest } from "@/requests";
-import { INokoGetEntryResponse } from "@/responses";
+import type { INokoPostEntryRequest } from "@/requests";
+import type { INokoGetEntryResponse } from "@/responses";
 import {
-  Category,
-  TimeTableEntry,
-  TimeTableEntryCategory,
+  type Category,
+  type TimeTableEntry,
+  type TimeTableEntryCategory,
   loggableDays,
 } from "@/types";
 

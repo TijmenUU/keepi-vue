@@ -1,6 +1,6 @@
 import NokoClient from "@/noko-client";
-import { INokoGetProjectResponse, INokoGetTagResponse } from "@/responses";
-import { Category } from "@/types";
+import type { INokoGetProjectResponse, INokoGetTagResponse } from "@/responses";
+import type { Category } from "@/types";
 import { defineStore } from "pinia";
 
 const apiKeyLocalStorageKey = "noko-api-key";
@@ -294,7 +294,7 @@ function tryParseStoredNokoProjects(json: string): INokoGetProjectResponse[] {
       results.push({
         id: candidate.id,
         name: candidate.name,
-        enabled: true
+        enabled: true,
       });
     } else {
       console.debug("Stored tag to category mapping is not valid", candidate);

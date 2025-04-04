@@ -14,7 +14,7 @@ import {
 } from "vue";
 import {
   onBeforeRouteLeave,
-  RouteLocationNormalizedGeneric,
+  type RouteLocationNormalizedGeneric,
   useRouter,
 } from "vue-router";
 
@@ -77,8 +77,8 @@ const initializeSwapy = () => {
   if (swapyContainer.value != null) {
     const swapy = createSwapy(swapyContainer.value);
     swapy.onSwap((event) => {
-      swapyReportedOrder.value = event.data.array
-        .map((i) => i.itemId)
+      swapyReportedOrder.value = event.newSlotItemMap.asArray
+        .map((i) => i.item)
         .filter((i) => i != null)
         .map((i) => parseInt(i));
     });
@@ -337,7 +337,7 @@ const onRefetchNokoProjectsAndTags = async () => {
             <KeepiInput v-model="value.name" />
 
             <div
-              class="overflow-hidden text-ellipsis whitespace-nowrap text-nowrap"
+              class="overflow-hidden text-nowrap text-ellipsis whitespace-nowrap"
             >
               {{ getProjectName(value.projectId) }}
             </div>
@@ -345,7 +345,7 @@ const onRefetchNokoProjectsAndTags = async () => {
             <div class="flex flex-col overflow-x-hidden">
               <div
                 v-for="tag in value.nokoTags"
-                class="overflow-hidden text-ellipsis whitespace-nowrap text-nowrap"
+                class="overflow-hidden text-nowrap text-ellipsis whitespace-nowrap"
               >
                 {{ tag }}
               </div>
@@ -417,7 +417,7 @@ const onRefetchNokoProjectsAndTags = async () => {
                 @click="onAddTag(tag)"
               >
                 <span
-                  class="overflow-hidden text-ellipsis whitespace-nowrap text-nowrap text-sm text-white"
+                  class="overflow-hidden text-sm text-nowrap text-ellipsis whitespace-nowrap text-white"
                   >{{ tag }}
                 </span>
               </button>
@@ -426,7 +426,7 @@ const onRefetchNokoProjectsAndTags = async () => {
 
           <div
             v-for="tag in toAdd.nokoTags"
-            class="overflow-x-hidden text-ellipsis whitespace-nowrap text-nowrap"
+            class="overflow-x-hidden text-nowrap text-ellipsis whitespace-nowrap"
           >
             {{ tag }}
           </div>
@@ -472,7 +472,7 @@ const onRefetchNokoProjectsAndTags = async () => {
     <Transition name="fade" mode="out-in" appear>
       <div
         v-if="pendingNavigationChange"
-        class="pd-overlay fixed left-0 top-0 z-10 h-full w-full overflow-y-auto overflow-x-hidden"
+        class="pd-overlay fixed top-0 left-0 z-10 h-full w-full overflow-x-hidden overflow-y-auto"
       >
         <div class="m-5 sm:mx-auto sm:w-full sm:max-w-lg">
           <div class="flex flex-col rounded-lg bg-gray-700">
