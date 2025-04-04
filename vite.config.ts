@@ -1,20 +1,18 @@
+import { fileURLToPath, URL } from "node:url";
+
 import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
-import path from 'path'
+import vueDevTools from "vite-plugin-vue-devtools";
 
-// https://vitejs.dev/config/
+import tailwindcss from "@tailwindcss/vite";
+
+// https://vite.dev/config/
 export default defineConfig({
-  plugins: [vue()],
+  plugins: [vue(), vueDevTools(), tailwindcss()],
   resolve: {
-    alias: [
-      {
-        find: "@",
-        replacement: path.resolve("./src"),
-      },
-      {
-        find: "@test/",
-        replacement: path.resolve('./test'),
-      },
-    ],
+    alias: {
+      "@": fileURLToPath(new URL("./src", import.meta.url)),
+      "@test": fileURLToPath(new URL("./test", import.meta.url)),
+    },
   },
 });
