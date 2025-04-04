@@ -10,7 +10,7 @@ on:
       - main
 
 jobs:
-  build_and_deploy_job:
+  build_and_test:
     if: github.event_name == 'push' || github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     name: Build and Deploy Job
@@ -51,9 +51,9 @@ jobs:
         run: |
           bun run build
 
-      - name: Deploy 🚀
-        if: github.event_name == 'push'
-        shell: bash
-        run: |
-          bun install -g @azure/static-web-apps-cli
-          swa deploy ./dist --deployment-token "${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_WHITE_TREE_076F52203 }}" --env Production
+      # - name: Deploy 🚀
+      #   if: github.event_name == 'push'
+      #   shell: bash
+      #   run: |
+      #     bun install -g @azure/static-web-apps-cli
+      #     swa deploy ./dist --deployment-token "${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_WHITE_TREE_076F52203 }}" --env Production
