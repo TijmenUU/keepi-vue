@@ -1,4 +1,10 @@
-import { getDifferenceInSeconds, getWeekDaysFor, getWeekNumber } from "@/date";
+import {
+  areDatesEqual,
+  formatDateAsTwoLetterDayName,
+  getDifferenceInSeconds,
+  getWeekDaysFor,
+  getWeekNumber,
+} from "@/date";
 import { describe, expect, test } from "vitest";
 
 describe("format", () => {
@@ -90,5 +96,66 @@ describe("format", () => {
     expect(
       getDifferenceInSeconds(twoHundredMillisecondsLater, now),
     ).toBeCloseTo(0.2, 1);
+  });
+
+  test("formatDateAsTwoLetterDayName", () => {
+    expect(formatDateAsTwoLetterDayName(new Date("2025-04-07T00:00:00"))).toBe(
+      "ma",
+    );
+    expect(formatDateAsTwoLetterDayName(new Date("2025-04-08T00:00:00"))).toBe(
+      "di",
+    );
+    expect(formatDateAsTwoLetterDayName(new Date("2025-04-09T00:00:00"))).toBe(
+      "wo",
+    );
+    expect(formatDateAsTwoLetterDayName(new Date("2025-04-10T00:00:00"))).toBe(
+      "do",
+    );
+    expect(formatDateAsTwoLetterDayName(new Date("2025-04-11T00:00:00"))).toBe(
+      "vr",
+    );
+    expect(formatDateAsTwoLetterDayName(new Date("2025-04-12T00:00:00"))).toBe(
+      "za",
+    );
+    expect(formatDateAsTwoLetterDayName(new Date("2025-04-13T00:00:00"))).toBe(
+      "zo",
+    );
+  });
+
+  test("areDatesEqual", () => {
+    expect(
+      areDatesEqual(
+        new Date("2025-04-07T00:00:00"),
+        new Date("2025-04-07T00:00:00"),
+      ),
+    ).toBe(true);
+
+    expect(
+      areDatesEqual(
+        new Date("2025-04-07T23:59:59"),
+        new Date("2025-04-07T00:00:00"),
+      ),
+    ).toBe(true);
+
+    expect(
+      areDatesEqual(
+        new Date("2025-04-08T00:00:00"),
+        new Date("2025-04-07T00:00:00"),
+      ),
+    ).toBe(false);
+
+    expect(
+      areDatesEqual(
+        new Date("2025-05-07T00:00:00"),
+        new Date("2025-04-07T00:00:00"),
+      ),
+    ).toBe(false);
+
+    expect(
+      areDatesEqual(
+        new Date("2024-04-07T00:00:00"),
+        new Date("2025-04-07T00:00:00"),
+      ),
+    ).toBe(false);
   });
 });
