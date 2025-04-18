@@ -11,6 +11,8 @@
         "vue3-popper": "^1.5.0",
       },
       "devDependencies": {
+        "@regle/core": "^1.0.8",
+        "@regle/rules": "^1.0.8",
         "@tailwindcss/vite": "^4.1.2",
         "@tsconfig/node22": "^22.0.1",
         "@types/node": "^22.13.14",
@@ -155,6 +157,10 @@
     "@polka/url": ["@polka/url@1.0.0-next.28", "", {}, "sha512-8LduaNlMZGwdZ6qWrKlfa+2M4gahzFkprZiAt2TF8uS0qQgBizKXpXURqvTJ4WtmupWxaLqjRb2UCTe72mu+Aw=="],
 
     "@popperjs/core": ["@popperjs/core@2.11.8", "", {}, "sha512-P1st0aksCrn9sGZhp8GMYwBnQsbvAWsZAX44oXNNvLHGqAOcoVxmjZiohstwQ7SqKnbR47akdNi+uleWD8+g6A=="],
+
+    "@regle/core": ["@regle/core@1.0.8", "", { "peerDependencies": { "pinia": ">=2.2.5", "vue": ">=3.3.0" }, "optionalPeers": ["pinia"] }, "sha512-TeyPT9f1FprH1O9bsoCMD+VcMFnO+qFQNkkamOGswF+BYarFidyJqd7iLdv9GXAPU8088PwBX1M8MFkOxf7kAg=="],
+
+    "@regle/rules": ["@regle/rules@1.0.8", "", { "dependencies": { "@regle/core": "1.0.8" } }, "sha512-mhnLZdqffVfY2xkUO+X4jY1Nltmxwz64SbH9CTsdDkKFmcN+naaZLyr4aA6P1KE982O6AJHtT+xXG6/qN/gpfg=="],
 
     "@rollup/pluginutils": ["@rollup/pluginutils@5.1.4", "", { "dependencies": { "@types/estree": "^1.0.0", "estree-walker": "^2.0.2", "picomatch": "^4.0.2" }, "peerDependencies": { "rollup": "^1.20.0||^2.0.0||^3.0.0||^4.0.0" }, "optionalPeers": ["rollup"] }, "sha512-USm05zrsFxYLPdWWq+K3STlWiT/3ELn3RcV5hJMghpeAIhxfsUIg6mt12CBJBInWMV4VneoV7SfGv8xIwo2qNQ=="],
 
