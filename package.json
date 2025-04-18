@@ -26,13 +26,14 @@
     "@vue/tsconfig": "^0.7.0",
     "autoprefixer": "^10.4.21",
     "postcss": "^8.5.3",
-    "prettier-plugin-tailwindcss": "^0.6.11",
     "prettier": "^3.5.3",
+    "prettier-plugin-tailwindcss": "^0.6.11",
     "tailwindcss": "^4.1.2",
     "typescript": "^5.8.2",
-    "vite-plugin-vue-devtools": "^7.7.2",
     "vite": "^6.2.5",
+    "vite-plugin-vue-devtools": "^7.7.2",
     "vitest": "^3.1.1",
+    "vitest-mock-extended": "^3.1.0",
     "vue-tsc": "^2.2.8"
   }
 }

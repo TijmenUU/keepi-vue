@@ -23,6 +23,7 @@ import MenuLink from "@/components/MenuLink.vue";
           class="mt-0 flex flex-row space-x-5 rounded-lg border-0 border-gray-700 bg-gray-900 p-0 font-medium rtl:space-x-reverse"
         >
           <MenuLink route="/"> Invoer </MenuLink>
+          <MenuLink route="/v2">V2</MenuLink>
           <MenuLink route="/categories"> Categorieën </MenuLink>
           <MenuLink route="/setup"> Token </MenuLink>
         </div>

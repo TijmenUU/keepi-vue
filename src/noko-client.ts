@@ -9,7 +9,13 @@ import type {
   INokoGetCurrentUserResponse,
 } from "@/responses";
 
-export default class NokoClient {
+export interface INokoClient {
+  createEntry(body: INokoPostEntryRequest): Promise<INokoPostEntryResponse>;
+  updateEntry(id: number, body: INokoPutEntryRequest): Promise<void>;
+  deleteEntry(id: number): Promise<void>;
+}
+
+export default class NokoClient implements INokoClient {
   private baseUrl: string;
   private userAgent: string;
 
