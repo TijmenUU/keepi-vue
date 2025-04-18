@@ -182,6 +182,44 @@ const { onSubmit, forceShowError } = useCustomSubmit({
     );
   },
 });
+
+const onKeyDown = (event: KeyboardEvent) => {
+  if (event.target == null || !(event.target instanceof HTMLInputElement)) {
+    console.error("Unexpected element as target", event.target);
+    return;
+  }
+
+  const inputId = parseInt(event.target.id);
+  if (Number.isNaN(inputId) || inputId < 0) {
+    console.error(
+      "Input element is missing a numeric ID attribute",
+      event.target,
+    );
+    return;
+  }
+
+  let focusOnIndex = inputId;
+  if (event.code === "ArrowDown") {
+    focusOnIndex = (inputId + 7) % r$.$value.days.length;
+  } else if (event.code === "ArrowUp") {
+    focusOnIndex = inputId - 7;
+    if (focusOnIndex < 0) {
+      focusOnIndex += r$.$value.days.length;
+    }
+  } else {
+    return;
+  }
+
+  const candidateElement = document.getElementById(focusOnIndex.toString());
+  if (candidateElement == null) {
+    console.error(
+      `Cannot focus element with ID ${focusOnIndex} because it does not exist`,
+    );
+    return;
+  }
+
+  candidateElement.focus();
+};
 </script>
 
 <template>
@@ -209,36 +247,50 @@ const { onSubmit, forceShowError } = useCustomSubmit({
           v-model="r$.$value.days[0 + index * 7].minutes"
           :field="r$.$fields.days.$each[0 + index * 7].$fields.minutes"
           :force-show-error="forceShowError"
+          :id="`${0 + index * 7}`"
+          @keydown="onKeyDown"
         />
         <WeekEditorNewInput
           v-model="r$.$value.days[1 + index * 7].minutes"
           :field="r$.$fields.days.$each[1 + index * 7].$fields.minutes"
           :force-show-error="forceShowError"
+          :id="`${1 + index * 7}`"
+          @keydown="onKeyDown"
         />
         <WeekEditorNewInput
           v-model="r$.$value.days[2 + index * 7].minutes"
           :field="r$.$fields.days.$each[2 + index * 7].$fields.minutes"
           :force-show-error="forceShowError"
+          :id="`${2 + index * 7}`"
+          @keydown="onKeyDown"
         />
         <WeekEditorNewInput
           v-model="r$.$value.days[3 + index * 7].minutes"
           :field="r$.$fields.days.$each[3 + index * 7].$fields.minutes"
           :force-show-error="forceShowError"
+          :id="`${3 + index * 7}`"
+          @keydown="onKeyDown"
         />
         <WeekEditorNewInput
           v-model="r$.$value.days[4 + index * 7].minutes"
           :field="r$.$fields.days.$each[4 + index * 7].$fields.minutes"
           :force-show-error="forceShowError"
+          :id="`${4 + index * 7}`"
+          @keydown="onKeyDown"
         />
         <WeekEditorNewInput
           v-model="r$.$value.days[5 + index * 7].minutes"
           :field="r$.$fields.days.$each[5 + index * 7].$fields.minutes"
           :force-show-error="forceShowError"
+          :id="`${5 + index * 7}`"
+          @keydown="onKeyDown"
         />
         <WeekEditorNewInput
           v-model="r$.$value.days[6 + index * 7].minutes"
           :field="r$.$fields.days.$each[6 + index * 7].$fields.minutes"
           :force-show-error="forceShowError"
+          :id="`${6 + index * 7}`"
+          @keydown="onKeyDown"
         />
         <span class="text-center text-gray-500">
           {{ toHoursMinutesNotation(categoryTotals[category]) }}

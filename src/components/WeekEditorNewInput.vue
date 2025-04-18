@@ -8,6 +8,11 @@ const model = defineModel<string>();
 const props = defineProps<{
   forceShowError: boolean;
   field: RegleFieldStatus;
+  id: string;
+}>();
+
+const emits = defineEmits<{
+  (e: "keydown", ev: KeyboardEvent): void;
 }>();
 
 const errorMessage = computed<string>(() => {
@@ -32,8 +37,10 @@ const errorMessage = computed<string>(() => {
       <input
         class="w-full rounded-md border border-gray-500 text-center"
         :class="{ 'border-red-500': props.field.$invalid }"
+        :id="props.id"
         type="text"
         v-model="model"
+        @keydown="emits('keydown', $event)"
       />
     </Popper>
   </div>
