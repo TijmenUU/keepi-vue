@@ -4,11 +4,13 @@ import WeekEditorNewInput from "@/components/WeekEditorNewInput.vue";
 import WeekViewDayLabel from "@/components/WeekViewDayLabel.vue";
 import { areDatesEqual, type DateRange } from "@/date";
 import { toHoursMinutesNotation, tryParseTimeNotation } from "@/format";
+import {
+  mapToMinutesPerCategoryForDates,
+  type MappedNokoEntryDateMinutePair,
+} from "@/nokoHelpers";
 import { useCustomSubmit } from "@/regleHelpers";
 import type { INokoGetEntryResponse } from "@/responses";
 import { useApplicationStore } from "@/store/application-store";
-import { mapToTimeTableEntries } from "@/transformer";
-import type { TimeTableEntry } from "@/types";
 import { useRegle } from "@regle/core";
 import { withMessage } from "@regle/rules";
 import { computed } from "vue";
@@ -32,17 +34,19 @@ const categories = applicationStore.categories
   .sort((a, b) => a.order - b.order)
   .map((c) => c.name);
 
-const timeTableEntries = mapToTimeTableEntries(
-  props.dateRange,
+const minutesPerDatePerCategory = mapToMinutesPerCategoryForDates(
+  props.dateRange.dates,
   applicationStore.categories,
   props.nokoEntries,
 );
 
-const mapEntriesToMinutesPerDate = (entries: TimeTableEntry[]): number[] => {
+const mapEntriesToMinutesPerDate = (
+  entries: MappedNokoEntryDateMinutePair[],
+): number[] => {
   return props.dateRange.dates.map((d) =>
     entries
       .filter((ce) => areDatesEqual(ce.date, d))
-      .reduce((previous, current) => current.initialMinutes + previous, 0),
+      .reduce((previous, current) => current.minutes + previous, 0),
   );
 };
 
@@ -50,10 +54,17 @@ const { r$ } = useRegle(
   {
     days: categories
       .map((c) => {
-        const categoryEntries = timeTableEntries.entries.filter(
+        const categoryEntries = minutesPerDatePerCategory.entries.filter(
           (e) => e.category.name === c,
         );
-        return mapEntriesToMinutesPerDate(categoryEntries);
+        return mapEntriesToMinutesPerDate(
+          categoryEntries
+            .map((ce) => ce.minutesPerDate)
+            .reduce((previous, current) => {
+              current.forEach((i) => previous.push(i));
+              return previous;
+            }, []),
+        );
       })
       .reduce<{ minutes: string }[]>((previous, current) => {
         current.forEach((v) =>
@@ -95,7 +106,7 @@ const categoryTotals = computed<Record<string, number>>(() => {
 });
 
 const unmappedMinutesPerDate = mapEntriesToMinutesPerDate(
-  timeTableEntries.unmappedEntries,
+  minutesPerDatePerCategory.unmappedEntries,
 );
 const unmappedMinutes = {
   monday: unmappedMinutesPerDate[0],

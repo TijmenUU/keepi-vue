@@ -1,8 +1,578 @@
 import { mock } from "vitest-mock-extended";
 import { describe, expect, test } from "vitest";
 import { INokoClient } from "@/noko-client";
-import { saveChangesToNoko } from "@/nokoHelpers";
+import {
+  MappedNokoEntry,
+  MappedNokoEntryDateMinutePair,
+  mapToMinutesPerCategoryForDates,
+  saveChangesToNoko,
+} from "@/nokoHelpers";
 import { INokoGetEntryResponse } from "@/responses";
+import { toShortIsoDate } from "@/format";
+import { Category } from "@/types";
+
+describe("mapToMinutesPerCategoryForDates", () => {
+  test("average workweek scenario should be mapped correctly", () => {
+    const result = mapToMinutesPerCategoryForDates(
+      getTestWeekdays(),
+      getTestCategories(),
+      getAverageWorkweekEntries(),
+    );
+
+    expect(result.entries.length).toBe(4);
+    expect(result.unmappedEntries.length).toBe(7);
+
+    expectToHaveTimeTableEntriesForProjectWeekDays(
+      "Development",
+      result.entries,
+      [480, 480, 420, 0, 480, 0, 0],
+    );
+
+    expectToHaveTimeTableEntriesForProjectWeekDays(
+      "Presentation",
+      result.entries,
+      [0, 0, 60, 0, 0, 0, 0],
+    );
+
+    expectToHaveTimeTableEntriesForProjectWeekDays(
+      "National holiday",
+      result.entries,
+      [0, 0, 0, 480, 0, 0, 0],
+    );
+
+    expectToHaveTimeTableEntriesForProjectWeekDays(
+      "Vacation",
+      result.entries,
+      [0, 0, 0, 0, 0, 0, 0],
+    );
+
+    expectToHaveUnmappedTimeTableEntriesForProjectWeekDays(
+      result.unmappedEntries,
+      [0, 0, 0, 0, 0, 0, 0],
+    );
+  });
+
+  test("average workweek scenario with unmapped entries should be mapped correctly", () => {
+    // Remove the categories National holiday and Presentation
+    const testCategories = getTestCategories().slice(0, 2);
+
+    const result = mapToMinutesPerCategoryForDates(
+      getTestWeekdays(),
+      testCategories,
+      getAverageWorkweekEntries(),
+    );
+
+    //                  | Monday | Tuesday | Wednesday | Thursday | Friday
+    // Development      | 8h     | 8h      | 7h        | -        | 8h
+    // Presentation     | -      | -       | 1h        | -        | -
+    // National holiday | -      | -       | -         | 8h       | -
+    expect(result.entries.length).toBe(2);
+    expect(result.unmappedEntries.length).toBe(7);
+
+    expectToHaveTimeTableEntriesForProjectWeekDays(
+      "Development",
+      result.entries,
+      [480, 480, 420, 0, 480, 0, 0],
+    );
+
+    expectToHaveTimeTableEntriesForProjectWeekDays(
+      "Vacation",
+      result.entries,
+      [0, 0, 0, 0, 0, 0, 0],
+    );
+
+    expectToHaveUnmappedTimeTableEntriesForProjectWeekDays(
+      result.unmappedEntries,
+      [0, 0, 60, 480, 0, 0, 0],
+    );
+  });
+
+  test("partial average workweek scenario should be mapped correctly", () => {
+    const result = mapToMinutesPerCategoryForDates(
+      getTestWeekdays(),
+      getTestCategories(),
+      // Only include monday until wednesday
+      getAverageWorkweekEntries().filter((e) => e.date < "2024-01-25"),
+    );
+
+    expect(result.entries.length).toBe(4);
+    expect(result.unmappedEntries.length).toBe(7);
+
+    expectToHaveTimeTableEntriesForProjectWeekDays(
+      "Development",
+      result.entries,
+      [480, 480, 420, 0, 0, 0, 0],
+    );
+
+    expectToHaveTimeTableEntriesForProjectWeekDays(
+      "Presentation",
+      result.entries,
+      [0, 0, 60, 0, 0, 0, 0],
+    );
+
+    expectToHaveTimeTableEntriesForProjectWeekDays(
+      "National holiday",
+      result.entries,
+      [0, 0, 0, 0, 0, 0, 0],
+    );
+
+    expectToHaveTimeTableEntriesForProjectWeekDays(
+      "Vacation",
+      result.entries,
+      [0, 0, 0, 0, 0, 0, 0],
+    );
+
+    expectToHaveUnmappedTimeTableEntriesForProjectWeekDays(
+      result.unmappedEntries,
+      [0, 0, 0, 0, 0, 0, 0],
+    );
+  });
+
+  test("vacation scenario should be mapped correctly", () => {
+    const result = mapToMinutesPerCategoryForDates(
+      getTestWeekdays(),
+      getTestCategories(),
+      getVacationWeekEntries(),
+    );
+
+    expect(result.entries.length).toBe(4);
+    expect(result.unmappedEntries.length).toBe(7);
+
+    expectToHaveTimeTableEntriesForProjectWeekDays(
+      "Development",
+      result.entries,
+      [0, 0, 0, 0, 0, 0, 0],
+    );
+
+    expectToHaveTimeTableEntriesForProjectWeekDays(
+      "Presentation",
+      result.entries,
+      [0, 0, 0, 0, 0, 0, 0],
+    );
+
+    expectToHaveTimeTableEntriesForProjectWeekDays(
+      "National holiday",
+      result.entries,
+      [0, 0, 0, 0, 0, 0, 0],
+    );
+
+    expectToHaveTimeTableEntriesForProjectWeekDays(
+      "Vacation",
+      result.entries,
+      [480, 480, 480, 480, 480, 0, 0],
+    );
+
+    expectToHaveUnmappedTimeTableEntriesForProjectWeekDays(
+      result.unmappedEntries,
+      [0, 0, 0, 0, 0, 0, 0],
+    );
+  });
+
+  test("should map unknown project ID to unmapped entries", () => {
+    const result = mapToMinutesPerCategoryForDates(
+      getTestWeekdays(),
+      getTestCategories(),
+      [
+        {
+          id: 5001,
+          date: "2024-01-22", // monday
+          user: {
+            id: 9000,
+          },
+          minutes: 480, // 8 hours
+          description: "#Development",
+          project: {
+            id: 2, // Different project ID
+          },
+          tags: [
+            {
+              id: 4000,
+              formatted_name: "#Development",
+            },
+          ],
+        },
+      ],
+    );
+
+    expect(result.entries.length).toBe(4);
+    expect(result.unmappedEntries.length).toBe(7);
+
+    expectToHaveTimeTableEntriesForProjectWeekDays(
+      "Development",
+      result.entries,
+      [0, 0, 0, 0, 0, 0, 0],
+    );
+
+    expectToHaveTimeTableEntriesForProjectWeekDays(
+      "Presentation",
+      result.entries,
+      [0, 0, 0, 0, 0, 0, 0],
+    );
+
+    expectToHaveTimeTableEntriesForProjectWeekDays(
+      "National holiday",
+      result.entries,
+      [0, 0, 0, 0, 0, 0, 0],
+    );
+
+    expectToHaveTimeTableEntriesForProjectWeekDays(
+      "Vacation",
+      result.entries,
+      [0, 0, 0, 0, 0, 0, 0],
+    );
+
+    expectToHaveUnmappedTimeTableEntriesForProjectWeekDays(
+      result.unmappedEntries,
+      [480, 0, 0, 0, 0, 0, 0],
+    );
+  });
+
+  test("should map unknown tag to unmapped entries", () => {
+    const result = mapToMinutesPerCategoryForDates(
+      getTestWeekdays(),
+      getTestCategories(),
+      [
+        {
+          id: 5002,
+          date: "2024-01-22", // monday
+          user: {
+            id: 9000,
+          },
+          minutes: 480, // 8 hours
+          description: "#Development",
+          project: {
+            id: 1,
+          },
+          tags: [
+            {
+              id: 4000,
+              formatted_name: "#Developments", // Different tag
+            },
+          ],
+        },
+      ],
+    );
+
+    expect(result.entries.length).toBe(4);
+    expect(result.unmappedEntries.length).toBe(7);
+
+    expectToHaveTimeTableEntriesForProjectWeekDays(
+      "Development",
+      result.entries,
+      [0, 0, 0, 0, 0, 0, 0],
+    );
+
+    expectToHaveTimeTableEntriesForProjectWeekDays(
+      "Presentation",
+      result.entries,
+      [0, 0, 0, 0, 0, 0, 0],
+    );
+
+    expectToHaveTimeTableEntriesForProjectWeekDays(
+      "National holiday",
+      result.entries,
+      [0, 0, 0, 0, 0, 0, 0],
+    );
+
+    expectToHaveTimeTableEntriesForProjectWeekDays(
+      "Vacation",
+      result.entries,
+      [0, 0, 0, 0, 0, 0, 0],
+    );
+
+    expectToHaveUnmappedTimeTableEntriesForProjectWeekDays(
+      result.unmappedEntries,
+      [480, 0, 0, 0, 0, 0, 0],
+    );
+  });
+
+  test("should map unknown tag combination to unmapped entries", () => {
+    const result = mapToMinutesPerCategoryForDates(
+      getTestWeekdays(),
+      getTestCategories(),
+      [
+        {
+          id: 5003,
+          date: "2024-01-22", // monday
+          user: {
+            id: 9000,
+          },
+          minutes: 480, // 8 hours
+          description: "#Development",
+          project: {
+            id: 1,
+          },
+          tags: [
+            // Different tag combination
+            {
+              id: 4000,
+              formatted_name: "#Development",
+            },
+            {
+              id: 4001,
+              formatted_name: "#Special",
+            },
+          ],
+        },
+      ],
+    );
+
+    expect(result.entries.length).toBe(4);
+    expect(result.unmappedEntries.length).toBe(7);
+
+    expectToHaveTimeTableEntriesForProjectWeekDays(
+      "Development",
+      result.entries,
+      [0, 0, 0, 0, 0, 0, 0],
+    );
+
+    expectToHaveTimeTableEntriesForProjectWeekDays(
+      "Presentation",
+      result.entries,
+      [0, 0, 0, 0, 0, 0, 0],
+    );
+
+    expectToHaveTimeTableEntriesForProjectWeekDays(
+      "National holiday",
+      result.entries,
+      [0, 0, 0, 0, 0, 0, 0],
+    );
+
+    expectToHaveTimeTableEntriesForProjectWeekDays(
+      "Vacation",
+      result.entries,
+      [0, 0, 0, 0, 0, 0, 0],
+    );
+
+    expectToHaveUnmappedTimeTableEntriesForProjectWeekDays(
+      result.unmappedEntries,
+      [480, 0, 0, 0, 0, 0, 0],
+    );
+  });
+
+  //                  | Monday | Tuesday | Wednesday | Thursday | Friday
+  // Development      | 8h     | 8h      | 7h        | -        | 8h
+  // Presentation     | -      | -       | 1h        | -        | -
+  // National holiday | -      | -       | -         | 8h       | -
+  function getAverageWorkweekEntries(): INokoGetEntryResponse[] {
+    return [
+      {
+        id: 5001,
+        date: "2024-01-22", // monday
+        user: {
+          id: 9000,
+        },
+        minutes: 480, // 8 hours
+        description: "#Development",
+        project: {
+          id: 1,
+        },
+        tags: [
+          {
+            id: 4000,
+            formatted_name: "#Development",
+          },
+        ],
+      },
+      {
+        id: 5002,
+        date: "2024-01-23", // tuesday
+        user: {
+          id: 9000,
+        },
+        minutes: 480, // 8 hours
+        description: "#Development",
+        project: {
+          id: 1,
+        },
+        tags: [
+          {
+            id: 4000,
+            formatted_name: "#Development",
+          },
+        ],
+      },
+      {
+        id: 5003,
+        date: "2024-01-24", // wednesday
+        user: {
+          id: 9000,
+        },
+        minutes: 420, // 7 hours
+        description: "#Development",
+        project: {
+          id: 1,
+        },
+        tags: [
+          {
+            id: 4000,
+            formatted_name: "#Development",
+          },
+        ],
+      },
+      {
+        id: 5004,
+        date: "2024-01-24", // wednesday
+        user: {
+          id: 9000,
+        },
+        minutes: 60, // 1 hour
+        description: "#Presentation",
+        project: {
+          id: 1,
+        },
+        tags: [
+          {
+            id: 4001,
+            formatted_name: "#Presentation",
+          },
+        ],
+      },
+      {
+        id: 5005,
+        date: "2024-01-25", // thursday
+        user: {
+          id: 9000,
+        },
+        minutes: 480, // 8 hours
+        description: "#National-Holiday",
+        project: {
+          id: 2,
+        },
+        tags: [
+          {
+            id: 4002,
+            formatted_name: "#National-Holiday",
+          },
+        ],
+      },
+      {
+        id: 5006,
+        date: "2024-01-26", // friday
+        user: {
+          id: 9000,
+        },
+        minutes: 480, // 8 hours
+        description: "#Development",
+        project: {
+          id: 1,
+        },
+        tags: [
+          {
+            id: 4000,
+            formatted_name: "#Development",
+          },
+        ],
+      },
+    ];
+  }
+
+  //                  | Monday | Tuesday | Wednesday | Thursday | Friday
+  // Vacation         | 8h     | 8h      | 8h        | 8h       | 8h
+  function getVacationWeekEntries(): INokoGetEntryResponse[] {
+    return getTestWeekdays()
+      .slice(0, 5)
+      .map((date, index) => ({
+        id: 5010 + index,
+        date: toShortIsoDate(date),
+        user: {
+          id: 9000,
+        },
+        minutes: 480, // 8 hours
+        description: "#Vacation",
+        project: {
+          id: 3,
+        },
+        tags: [
+          {
+            id: 4003,
+            formatted_name: "#Vacation",
+          },
+        ],
+      }));
+  }
+
+  function getTestWeekdays(): Date[] {
+    return [
+      new Date("2024-01-22T00:00:00Z"), // monday
+      new Date("2024-01-23T00:00:00Z"), // tuesday
+      new Date("2024-01-24T00:00:00Z"), // wednesday
+      new Date("2024-01-25T00:00:00Z"), // thursday
+      new Date("2024-01-26T00:00:00Z"), // friday
+      new Date("2024-01-27T00:00:00Z"), // saturday
+      new Date("2024-01-28T00:00:00Z"), // sunday
+    ];
+  }
+
+  function getTestCategories(): Category[] {
+    return [
+      {
+        order: 1,
+        readonly: false,
+        name: "Development",
+        projectId: 1,
+        nokoTags: ["#Development"],
+      },
+      {
+        order: 2,
+        readonly: false,
+        name: "Vacation",
+        projectId: 3,
+        nokoTags: ["#Vacation"],
+      },
+      {
+        order: 3,
+        readonly: false,
+        name: "National holiday",
+        projectId: 2,
+        nokoTags: ["#National-Holiday"],
+      },
+      {
+        order: 4,
+        readonly: false,
+        name: "Presentation",
+        projectId: 1,
+        nokoTags: ["#Presentation"],
+      },
+    ];
+  }
+
+  function expectToHaveTimeTableEntriesForProjectWeekDays(
+    categoryName: string,
+    timeTableEntries: MappedNokoEntry[],
+    minutesPerWeekDay: number[],
+  ) {
+    const categoryEntries = timeTableEntries.find(
+      (r) => r.category.name === categoryName,
+    );
+
+    expect(categoryEntries).not.toBe(null);
+
+    expect(categoryEntries?.minutesPerDate.length).toBe(7);
+
+    for (let i = 0; i < 7; ++i) {
+      const match = categoryEntries?.minutesPerDate[i];
+      if (match == null) {
+        throw Error(
+          `The mapped entries dit not contain an entry for category ${categoryName}`,
+        );
+      }
+
+      expect(match.minutes).toBe(minutesPerWeekDay[i]);
+    }
+  }
+
+  function expectToHaveUnmappedTimeTableEntriesForProjectWeekDays(
+    timeTableEntries: MappedNokoEntryDateMinutePair[],
+    minutesPerWeekDay: number[],
+  ) {
+    expect(timeTableEntries.length).toBe(7);
+
+    for (let i = 0; i < 7; ++i) {
+      expect(timeTableEntries[i].minutes).toBe(minutesPerWeekDay[i]);
+    }
+  }
+});
 
 describe("saveChangesToNoko", () => {
   test("should update matching noko entry", async () => {

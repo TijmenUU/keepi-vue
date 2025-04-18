@@ -3,6 +3,70 @@ import type { INokoClient } from "@/noko-client";
 import type { INokoGetEntryResponse } from "@/responses";
 import type { Category } from "@/types";
 
+export type MappedNokoEntry = {
+  category: Category;
+  minutesPerDate: MappedNokoEntryDateMinutePair[];
+};
+
+export type MappedNokoEntryDateMinutePair = { date: Date; minutes: number };
+
+export function mapToMinutesPerCategoryForDates(
+  dateRange: Date[],
+  categories: Category[],
+  nokoEntries: INokoGetEntryResponse[],
+): {
+  entries: MappedNokoEntry[];
+  unmappedEntries: MappedNokoEntryDateMinutePair[];
+} {
+  let mappedNokoEntryIds: number[] = [];
+  const categoryEntries: MappedNokoEntry[] = [];
+
+  categories.forEach((category) => {
+    categoryEntries.push({
+      category,
+      minutesPerDate: dateRange.map((date) => {
+        const entryIsoDate = toShortIsoDate(date);
+
+        const matchingNokoEntries = nokoEntries.filter(
+          (ne) => ne.date === entryIsoDate && isForCategory(ne, category),
+        );
+        mappedNokoEntryIds = [
+          ...mappedNokoEntryIds,
+          ...matchingNokoEntries.map((ne) => ne.id),
+        ];
+
+        const initialMinutes = matchingNokoEntries.reduce<number>(
+          (acc, current) => acc + current.minutes,
+          0,
+        );
+        return {
+          date: date,
+          category: category,
+          minutes: initialMinutes,
+        };
+      }),
+    });
+  });
+
+  const unmappedNokoEntries = nokoEntries.filter(
+    (ne) => !mappedNokoEntryIds.includes(ne.id),
+  );
+
+  return {
+    entries: categoryEntries,
+    unmappedEntries: dateRange.map((date) => {
+      const entryIsoDate = toShortIsoDate(date);
+      const totalMinutes = unmappedNokoEntries
+        .filter((ne) => ne.date === entryIsoDate)
+        .reduce<number>((acc, entry) => acc + entry.minutes, 0);
+      return {
+        date: date,
+        minutes: totalMinutes,
+      };
+    }),
+  };
+}
+
 export async function saveChangesToNoko(options: {
   nokoClient: INokoClient;
   originalEntries: INokoGetEntryResponse[];
