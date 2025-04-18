@@ -20,7 +20,7 @@ const buildCommit: string = import.meta.env.VITE_APPLICATION_BUILD_COMMIT;
 </script>
 
 <template>
-  <div class="flex min-h-screen flex-col">
+  <div class="flex min-h-screen w-screen min-w-[340px] flex-col">
     <Transition name="fade" mode="out-in" appear>
       <NavigationMenu v-if="store.isConfigured" />
     </Transition>
