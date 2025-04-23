@@ -21,7 +21,7 @@ const isToday = computed<boolean>(() => areDatesEqual(props.date, new Date()));
 </script>
 
 <template>
-  <div :class="{ 'text-blue-500': isToday }">
+  <div class="text-center" :class="{ 'text-blue-500': isToday }">
     {{ shortDayName }}
     <span class="align-top text-xs font-normal text-gray-500">
       {{ dayMonth }}
